@@ -62,24 +62,46 @@ class Model_generator:
         # --> Compute pair quality matrix for all student/house pair
         pair_quality_dict = {}
 
-        waiting_list_weight = 10
-        preference_weight = 10
+        # waiting_list_weight = 10
+        # preference_weight = 10
 
         for student in self.student_dataset.data:
             # --> Creating entry for student in pair quality dictionary
             pair_quality_dict[student["ref"]] = {}
 
             for house in self.house_dataset.data:
-                # --> Creating entry for student in pair quality dictionary
-                pair_quality_dict[student["ref"]][house["ref"]] = None
-
+                # --> Creating entry for student in pair quality dictionary                
+                pair_quality_dict[student["ref"]][house["ref"]] = 0
+            
                 # --> Calculating pair quality for the given student/house pair
-                # TODO: Complete pair quality equation
-                pair_quality_dict[student["ref"]][house["ref"]] = \
-                    - abs(student["budget_max"] - house["rent_per_room"]) \
-                    - student["waiting_list_pos"] * waiting_list_weight \
-                    - (student["preference"] == "single") * (house["room_count"] - 1) * preference_weight
+                # --> The better the pair quality, the higher the returned value.
+                # --> Shared vs single housing (value is 1 if contraint is met, otherwise 0)
+                # --> TODO                
+                if student["preference"] == "single" and house["room_count"] == 1:
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1
+                if student["preference"] == "shared" and house["room_count"] > 1:
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1                
+                # --> Waiting list position (value is 0 for bottom of waiting list, and gradually becomes 1 for the first in line.)
+                #print("Is this the amount of students?", self.student_dataset.nb_students)
+                pair_quality_dict[student["ref"]][house["ref"]] += (self.student_dataset.nb_students - student["waiting_list_pos"])/self.student_dataset.nb_students
+                # --> Housing cost (adds 1, and reduces that if the budget is exceeded, by the percentage of the exceedance.)
+                pair_quality_dict[student["ref"]][house["ref"]] += 1 
+                if house["rent_per_room"] < student["budget_min"]:
+                    pair_quality_dict[student["ref"]][house["ref"]] -= (student["budget_min"] - house["rent_per_room"])/student["budget_min"] 
+                if house["rent_per_room"] > student["budget_min"]: 
+                    pair_quality_dict[student["ref"]][house["ref"]] -= (house["rent_per_room"] - student["budget_max"])/student["budget_max"]                    
+                
 
+                # pair_quality_dict[student["ref"]][house["ref"]] = \
+                #     - abs(student["budget_max"] - house["rent_per_room"]) \
+                #     - student["waiting_list_pos"] * waiting_list_weight \
+                #     - (student["preference"] == "single") * (house["room_count"] - 1) * preference_weight
+                    
+        print(pair_quality_dict)
+        
+        
+        
+        
         # ========================== Decision variable dictionary generation =================
         # --> Creating decision variable dictionary
         decision_variable_dict = {}
@@ -98,7 +120,8 @@ class Model_generator:
                 # --> Creating and recording decision variable for corresponding pair in decision variable dictionary
                 decision_variable_dict[student["ref"]][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name=variable_name)
-
+        #print(decision_variable_dict)
+        
         return pair_quality_dict, decision_variable_dict
 
     def build_objective(self):
@@ -223,5 +246,5 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(100), House_dataset(50))
+    model = Model_generator(Student_dataset(10), House_dataset(10))
     model.output_to_lp()

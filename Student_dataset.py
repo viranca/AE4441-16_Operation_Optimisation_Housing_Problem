@@ -37,7 +37,11 @@ class Student_dataset:
         # ----- Initialising tools
         fake = Faker()
 
-        # --> Creating students
+        # --> initializing random waiting list positions 
+        waiting_list_positions = [*range(self.nb_students)]
+        random.shuffle(waiting_list_positions)
+        
+        # --> Creating students        
         for i in range(self.nb_students):
             self.data.append({"ref": str(i),
                               "name": fake.name().replace(" ", "_"),
@@ -51,7 +55,7 @@ class Student_dataset:
                               "preference": random.choice(["shared", "single"]),
                               "budget_min": random.randint(250, 350),
                               "budget_max": random.randint(400, 700),
-                              "waiting_list_pos": None})
+                              "waiting_list_pos": waiting_list_positions.pop(0)})
 
         # --> Updating year according to age
         for i in range(len(self.data)):
@@ -64,9 +68,9 @@ class Student_dataset:
         # --> Sorting students by year
         self.sort_by_property("year")
 
-        # --> Updating waiting list position
-        for i in range(len(self.data)):
-            self.data[len(self.data) - i - 1]["waiting_list_pos"] = i + 1
+        # # --> Updating waiting list position
+        # for i in range(len(self.data)):
+        #     self.data[len(self.data) - i - 1]["waiting_list_pos"] = i + 1
 
     def list_property(self, property):
         property_lst = []
@@ -88,6 +92,7 @@ class Student_dataset:
 
 if __name__ == '__main__':
     students = Student_dataset(10)
-    print(students.list_property("age"))
+    print(students.list_property("waiting_list_pos"))
     students.sort_by_property("age")
-    print(students.list_property("age"))
+    print(students.list_property("waiting_list_pos"))
+    
