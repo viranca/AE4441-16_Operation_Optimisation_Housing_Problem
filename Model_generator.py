@@ -62,8 +62,12 @@ class Model_generator:
         # --> Compute pair quality matrix for all student/house pair
         pair_quality_dict = {}
 
-        # waiting_list_weight = 10
-        # preference_weight = 10
+        # --> Creating parameter weight variables
+        # (can be used to give more importance to certain parameters over other in pair quality determination)
+        distance_weight = 1
+        shared_single_weight = 1
+        waiting_list_weight = 1
+        budget_weight = 1
 
         for student in self.student_dataset.data:
             # --> Creating entry for student in pair quality dictionary
@@ -79,30 +83,31 @@ class Model_generator:
                 # --> Distance from the faculty
                 # (value is 1 - distance from faculty cooresponding to studies)
                 pair_quality_dict[student["ref"]][house["ref"]] += \
-                    1 - house["distance_from_faculties"][student["study"]]
+                    1 - house["distance_from_faculties"][student["study"]] * distance_weight
 
                 # --> Shared vs single housing (value is 1 if constraint is met, otherwise 0)
                 if student["preference"] == "single" and house["room_count"] == 1 \
                         or student["preference"] == "shared" and house["room_count"] > 1:
-                    pair_quality_dict[student["ref"]][house["ref"]] += 1
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1 * shared_single_weight
 
                 # --> Waiting list position
                 # (value is 0 for bottom of waiting list, and gradually becomes 1 for the first in line)
                 pair_quality_dict[student["ref"]][house["ref"]] += \
-                    (self.student_dataset.nb_students - student["waiting_list_pos"])/self.student_dataset.nb_students
+                    (self.student_dataset.nb_students - student["waiting_list_pos"])/self.student_dataset.nb_students \
+                    * waiting_list_weight
 
                 # --> Housing cost
                 # (adds 1, and reduces that if the budget is exceeded, by the percentage of the exceedance)
                 if house["rent_per_room"] < student["budget_min"]:
                     pair_quality_dict[student["ref"]][house["ref"]] += \
-                        1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]
+                        (1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]) * budget_weight
 
                 elif house["rent_per_room"] > student["budget_max"]:
                     pair_quality_dict[student["ref"]][house["ref"]] += \
-                        1 - (house["rent_per_room"] - student["budget_max"])/student["budget_max"]
+                        (1 - (house["rent_per_room"] - student["budget_max"])/student["budget_max"]) * budget_weight
 
                 else:
-                    pair_quality_dict[student["ref"]][house["ref"]] += 1
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1 * budget_weight
 
         # ========================== Decision variable dictionary generation =================
         # --> Creating decision variable dictionary
