@@ -70,38 +70,40 @@ class Model_generator:
             pair_quality_dict[student["ref"]] = {}
 
             for house in self.house_dataset.data:
-                # --> Creating entry for student in pair quality dictionary                
+                # --> Creating entry for house in pair quality dictionary
                 pair_quality_dict[student["ref"]][house["ref"]] = 0
-            
-                # --> Calculating pair quality for the given student/house pair
-                # --> The better the pair quality, the higher the returned value.
-                # --> Shared vs single housing (value is 1 if contraint is met, otherwise 0)
-                # --> TODO                
-                if student["preference"] == "single" and house["room_count"] == 1:
-                    pair_quality_dict[student["ref"]][house["ref"]] += 1
-                if student["preference"] == "shared" and house["room_count"] > 1:
-                    pair_quality_dict[student["ref"]][house["ref"]] += 1                
-                # --> Waiting list position (value is 0 for bottom of waiting list, and gradually becomes 1 for the first in line.)
-                #print("Is this the amount of students?", self.student_dataset.nb_students)
-                pair_quality_dict[student["ref"]][house["ref"]] += (self.student_dataset.nb_students - student["waiting_list_pos"])/self.student_dataset.nb_students
-                # --> Housing cost (adds 1, and reduces that if the budget is exceeded, by the percentage of the exceedance.)
-                pair_quality_dict[student["ref"]][house["ref"]] += 1 
-                if house["rent_per_room"] < student["budget_min"]:
-                    pair_quality_dict[student["ref"]][house["ref"]] -= (student["budget_min"] - house["rent_per_room"])/student["budget_min"] 
-                if house["rent_per_room"] > student["budget_min"]: 
-                    pair_quality_dict[student["ref"]][house["ref"]] -= (house["rent_per_room"] - student["budget_max"])/student["budget_max"]                    
-                
 
-                # pair_quality_dict[student["ref"]][house["ref"]] = \
-                #     - abs(student["budget_max"] - house["rent_per_room"]) \
-                #     - student["waiting_list_pos"] * waiting_list_weight \
-                #     - (student["preference"] == "single") * (house["room_count"] - 1) * preference_weight
-                    
-        print(pair_quality_dict)
-        
-        
-        
-        
+                # ----- Calculating pair quality for the given student/house pair
+                # (The better the pair quality, the higher the returned value)
+
+                # --> Distance from the faculty
+                # (value is 1 - distance from faculty cooresponding to studies)
+                pair_quality_dict[student["ref"]][house["ref"]] += \
+                    1 - house["distance_from_faculties"][student["study"]]
+
+                # --> Shared vs single housing (value is 1 if constraint is met, otherwise 0)
+                if student["preference"] == "single" and house["room_count"] == 1 \
+                        or student["preference"] == "shared" and house["room_count"] > 1:
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1
+
+                # --> Waiting list position
+                # (value is 0 for bottom of waiting list, and gradually becomes 1 for the first in line)
+                pair_quality_dict[student["ref"]][house["ref"]] += \
+                    (self.student_dataset.nb_students - student["waiting_list_pos"])/self.student_dataset.nb_students
+
+                # --> Housing cost
+                # (adds 1, and reduces that if the budget is exceeded, by the percentage of the exceedance)
+                if house["rent_per_room"] < student["budget_min"]:
+                    pair_quality_dict[student["ref"]][house["ref"]] += \
+                        1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]
+
+                elif house["rent_per_room"] > student["budget_max"]:
+                    pair_quality_dict[student["ref"]][house["ref"]] += \
+                        1 - (house["rent_per_room"] - student["budget_max"])/student["budget_max"]
+
+                else:
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1
+
         # ========================== Decision variable dictionary generation =================
         # --> Creating decision variable dictionary
         decision_variable_dict = {}
@@ -120,7 +122,6 @@ class Model_generator:
                 # --> Creating and recording decision variable for corresponding pair in decision variable dictionary
                 decision_variable_dict[student["ref"]][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name=variable_name)
-        #print(decision_variable_dict)
         
         return pair_quality_dict, decision_variable_dict
 
@@ -184,7 +185,7 @@ class Model_generator:
             for student in self.student_dataset.data:
                 supply_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
 
-            self.model.addConstr(supply_constraint <= house["room_count"], constraint_name)
+            self.model.addConstr(supply_constraint == house["room_count"], constraint_name)
 
     def build_gender_split_constraints(self):
         """
@@ -196,17 +197,18 @@ class Model_generator:
         """
 
         for house in self.house_dataset.data:
-            # --> Generating constraint name according to convention C_gs_house-ref
-            constraint_name = "C_gs_" + str(house["ref"])
+            if house["room_count"] > 1:
+                # --> Generating constraint name according to convention C_gs_house-ref
+                constraint_name = "C_gs_" + str(house["ref"])
 
-            # --> Adding all decision variables (corresponding to given house) to constraint
-            gs_constraint = gp.LinExpr()
+                # --> Adding all decision variables (corresponding to given house) to constraint
+                gs_constraint = gp.LinExpr()
 
-            for student in self.student_dataset.data:
-                if student["gender"] == "f":
-                    gs_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
+                for student in self.student_dataset.data:
+                    if student["gender"] == "f":
+                        gs_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
 
-            self.model.addConstr(gs_constraint >= 2, constraint_name)
+                self.model.addConstr(gs_constraint >= 2, constraint_name)
 
     def build_first_year_priority_constraint(self):
         """
@@ -239,12 +241,13 @@ class Model_generator:
 
         self.model.write("Model.lp")
 
-    def optimise(self):
-        self.model.optimise()
+    def optimize(self):
+        self.model.optimize()
 
 if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(10), House_dataset(10))
+    model = Model_generator(Student_dataset(100), House_dataset(15))
     model.output_to_lp()
+    model.optimize()

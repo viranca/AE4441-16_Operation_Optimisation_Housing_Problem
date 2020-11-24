@@ -21,14 +21,16 @@ __date__ = '08/11/2020'
 
 
 class Student_dataset:
-    def __init__(self, nb_students):
+    def __init__(self,
+                 nb_students,
+                 faculty_lst=["ae", "cs", "3me"]):
         # ----- Initialising tools
-
         # --> Seeding generators
         random.seed(345)
 
         # --> Initialising records
         self.nb_students = nb_students
+        self.faculty_lst = faculty_lst
         self.data = []
 
         self.gen_data()
@@ -49,7 +51,7 @@ class Student_dataset:
                               "gender": random.choice(["m", "f"]),
                               "nationality": random.choice(["Dutch", "International"]),
                               "year": None,
-                              "study": random.choice(["ae", "cs", "3me"]),
+                              "study": random.choice(self.faculty_lst),
                               "background": random.choice(["dutch", "international"]),
 
                               "preference": random.choice(["shared", "single"]),
