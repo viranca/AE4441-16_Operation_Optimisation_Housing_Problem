@@ -35,7 +35,7 @@ class House_dataset(Dataset_abc):
             - Room count (normal distribution)
             - Location with sub-properties - x (normal distribution)
                                            - y (normal distribution)
-            - Distance from faculties with sub-properties each faculties from the faculty lst
+            - Distance from faculties with sub-properties - every faculties from the faculty lst
 
         :param nb_houses: Number of houses to be generated
         :param faculty_lst: Faculties available (need to match one provided to Student_dataset)

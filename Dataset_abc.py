@@ -7,12 +7,14 @@
 # Built-in/Generic Imports
 import random
 from math import sqrt
+from itertools import groupby
 
 # Libs
 import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
-from scipy.stats import norm
+
+from scipy.stats import norm, cumfreq, itemfreq, binned_statistic, relfreq
 
 # Own modules
 
@@ -51,6 +53,66 @@ class Dataset_abc:
                     self.data[i][property], self.data[i - 1][property] = \
                         self.data[i - 1][property], self.data[i][property]
 
+    # def post_process(self, property, sub_property=None):
+
+    def get_property_stats(self, property, sub_property=None, bin_count=10):
+        """
+        Used to print statistical properties of a requested property, using a provided number of bins
+
+        :param property: Property of data to plot
+        :param sub_property: Sub property if property has multiple sub-properties
+        :param bin_count: Number of bins to use (set automatically for str properties)
+        """
+
+        # --> Gather requested property
+        property_lst = self.list_property(property, sub_property)
+
+        if type(property_lst[0]) is str:
+            bin_count = len(set(property_lst))
+
+        else:
+            bin_count = bin_count
+
+        # --> Get binned statistical properties
+        if type(property_lst[0]) is str:
+            property_lst.sort()
+            binned_item_frequency = [len(list(group)) for key, group in groupby(property_lst)]
+
+            bin_labels = list(set(property_lst))
+
+        else:
+            binned_item_frequency = relfreq(property_lst, numbins=bin_count).frequency
+            bin_size = (max(property_lst) - min(property_lst))/bin_count
+            bin_labels = []
+
+            tracker = min(property_lst)
+
+            for _ in range(bin_count):
+                bin_labels.append(str(int(tracker)) + " <-> " + str(int(tracker + bin_size)))
+                tracker += bin_size
+
+        # --> Print statistical properties
+        print("================ " + property)
+        print(property_lst)
+
+        print("\n")
+
+        print("Bin count:", bin_count)
+        for i in range(bin_count):
+            print("Bin:", bin_labels[i], "      Freq:", binned_item_frequency[i])
+
+        print("\n")
+
+        if property in self.statistical_properties.keys():
+            print("Distribution type: Normal")
+            print("   - Mu:", str(self.statistical_properties[property]["mu"]))
+            print("   - Sigma:", str(self.statistical_properties[property]["sigma"]))
+
+        else:
+            print("Distribution type: Random")
+
+        return
+
     def plot_property_histogram(self, property, sub_property=None, bin_count=10):
         """
         Used to generate histogram of a specific property, using a provided number of bins
@@ -60,16 +122,16 @@ class Dataset_abc:
         :param bin_count: Number of bins to use (set automatically for str properties)
         """
 
-        # --> Create histogram plot
+        # --> Gather requested property
         property_lst = self.list_property(property, sub_property)
 
         if type(property_lst[0]) is str:
-            num_bins = len(set(property_lst))
-
+            bin_count = len(set(property_lst))
         else:
-            num_bins = bin_count
+            bin_count = bin_count
 
-        n, bins, patches = plt.hist(property_lst, num_bins,
+        # --> Create histogram plot
+        n, bins, patches = plt.hist(property_lst, bin_count,
                                     # density=1,
                                     facecolor='blue')
 

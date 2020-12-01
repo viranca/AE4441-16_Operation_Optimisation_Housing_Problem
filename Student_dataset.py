@@ -36,7 +36,6 @@ class Student_dataset(Dataset_abc):
             - Nationality (random)
             - Year (random)
             - Study (random)
-            - Background (random)
             - Preference (random)
             - Budget min (normal distribution)
             - Budget max (random)
@@ -90,8 +89,6 @@ class Student_dataset(Dataset_abc):
                               "nationality": random.choice(["Dutch", "International"]),
                               "year": None,
                               "study": random.choice(self.faculty_lst),
-                              "background": random.choice(["dutch", "international"]),
-
                               "preference": random.choice(["shared", "single"]),
                               "budget_min": int(np.random.normal(self.statistical_properties["budget_min"]["mu"],
                                                                  self.statistical_properties["budget_min"]["sigma"],
@@ -117,11 +114,11 @@ class Student_dataset(Dataset_abc):
 
 if __name__ == '__main__':
     students = Student_dataset(1000)
-    # print(students.list_property("waiting_list_pos"))
-    # students.sort_by_property("age")
-    # print(students.list_property("waiting_list_pos"))
 
-    students.plot_property_histogram("budget_min", bin_count=10)
-    students.plot_property_histogram("budget_max", bin_count=10)
-    students.plot_property_histogram("gender", bin_count=2)
-    students.plot_property_histogram("study")
+    # students.plot_property_histogram("budget_min", bin_count=10)
+    # students.plot_property_histogram("budget_max", bin_count=10)
+    # students.plot_property_histogram("gender")
+    # students.plot_property_histogram("study")
+
+    students.get_property_stats("budget_min")
+    students.get_property_stats("study")
