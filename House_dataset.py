@@ -52,13 +52,14 @@ class House_dataset(Dataset_abc):
         self.faculty_data = []
 
         # --> Initialising data properties
+     
         self.statistical_properties = {"room_count": {"mu": 3,
                                                       "sigma": 1},
 
-                                       "rent_per_room": {"mu": 600,
-                                                         "sigma": 100},
+                                        "rent_per_room": {"mu": 600,
+                                                          "sigma": 100},
 
-                                       "location": {"mu": 50,
+                                        "location": {"mu": 50,
                                                     "sigma": 25}}
 
         # ----- Generating data
