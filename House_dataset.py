@@ -25,8 +25,7 @@ __date__ = '08/11/2020'
 class House_dataset(Dataset_abc):
     def __init__(self,
                  nb_houses,
-                 faculty_lst=["ae", "cs", "3me", "io"],
-                 statistical_properties):
+                 faculty_lst=["ae", "cs", "3me", "io"]):
         """
         Used to generate a house dataset
 
@@ -48,20 +47,19 @@ class House_dataset(Dataset_abc):
         # --> Initialising records
         self.nb_houses = nb_houses
         self.faculty_lst = faculty_lst
-        self.statistical_properties = statistical_properties
         self.data = []
         self.faculty_data = []
 
         # --> Initialising data properties
      
-        # self.statistical_properties = {"room_count": {"mu": 3,
-        #                                               "sigma": 1},
+        self.statistical_properties = {"room_count": {"mu": 3,
+                                                      "sigma": 1},
 
-        #                                 "rent_per_room": {"mu": 600,
-        #                                                   "sigma": 100},
+                                        "rent_per_room": {"mu": 600,
+                                                          "sigma": 100},
 
-        #                                 "location": {"mu": 50,
-        #                                             "sigma": 25}}
+                                        "location": {"mu": 50,
+                                                    "sigma": 25}}
 
         # ----- Generating data
         self.gen_data()
@@ -119,8 +117,13 @@ class House_dataset(Dataset_abc):
             for faculty in self.faculty_data:
                 house["distance_from_faculties"][faculty["name"]] = \
                     (house["distance_from_faculties"][faculty["name"]] - min(distances))/(max(distances) - min(distances))
+                    
 
 
+    def change_statisticalproperties(self, new_statistical_properties):
+        self.statistical_properties = new_statistical_properties
+        
+        
 if __name__ == '__main__':
     houses = House_dataset(150)
     # print(houses.data)
