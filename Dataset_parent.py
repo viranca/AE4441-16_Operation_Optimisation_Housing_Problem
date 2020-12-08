@@ -75,11 +75,11 @@ class Dataset:
         # --> Get binned statistical properties
         if type(property_lst[0]) is str:
             property_lst.sort()
+
             binned_item_frequency = [len(list(group))/len(property_lst) for key, group in groupby(property_lst)]
 
-            print(property_lst)
-
             bin_labels = list(set(property_lst))
+            bin_labels.sort()
 
         else:
             binned_item_frequency = relfreq(property_lst, numbins=bin_count).frequency
@@ -94,9 +94,8 @@ class Dataset:
 
         # --> Print statistical properties
         print("================ " + property)
-        print(property_lst)
-
-        print("\n")
+        # print(property_lst)
+        # print("\n")
 
         print("Bin count:", bin_count)
         for i in range(bin_count):
@@ -112,6 +111,7 @@ class Dataset:
         else:
             print("Distribution type: Random")
 
+        print("\n")
         return
 
     def plot_property_histogram(self, property, bin_count=10, sub_property=None):

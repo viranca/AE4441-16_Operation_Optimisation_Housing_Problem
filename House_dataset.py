@@ -13,7 +13,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
-from Dataset_abc import Dataset_abc
+from Dataset_parent import Dataset_abc
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'

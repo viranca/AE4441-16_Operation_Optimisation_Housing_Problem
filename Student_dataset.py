@@ -12,7 +12,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
-from Dataset import Dataset
+from Dataset_parent import Dataset
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -105,8 +105,8 @@ class Student_dataset(Dataset):
 
         # --> Updating budget_max
         for i in range(len(self.data)):
-            self.data[i]["budget_max"] = self.data[i]["budget_min"] + random.randint(max_min_budget_difference_range[0],
-                                                                                     max_min_budget_difference_range[1])
+            self.data[i]["budget_max"] = self.data[i]["budget_min"] + random.randint(self.max_min_budget_difference_range[0],
+                                                                                     self.max_min_budget_difference_range[1])
 
         # --> Updating year according to age
         for i in range(len(self.data)):
@@ -128,5 +128,8 @@ if __name__ == '__main__':
     # students.plot_property_histogram("gender")
     # students.plot_property_histogram("study")
 
-    students.get_property_stats("budget_min")
-    students.get_property_stats("study")
+    # students.get_property_stats("budget_min")
+    students.get_property_stats("nationality")
+    students.data[0]["nationality"] = "French"
+    students.data[1]["nationality"] = "Arabic"
+    students.get_property_stats("nationality")
