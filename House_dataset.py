@@ -53,7 +53,6 @@ class House_dataset(Dataset_abc):
         # --> Initialising records
         self.nb_houses = nb_houses
         self.faculty_lst = faculty_lst
-
         self.data = []
         self.faculty_data = []
 
@@ -130,8 +129,13 @@ class House_dataset(Dataset_abc):
             for faculty in self.faculty_data:
                 house["distance_from_faculties"][faculty["name"]] = \
                     (house["distance_from_faculties"][faculty["name"]] - min(distances))/(max(distances) - min(distances))
+                    
 
 
+    def change_statisticalproperties(self, new_statistical_properties):
+        self.statistical_properties = new_statistical_properties
+        
+        
 if __name__ == '__main__':
     houses = House_dataset(150)
     # print(houses.data)
