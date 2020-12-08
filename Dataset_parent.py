@@ -77,6 +77,8 @@ class Dataset:
             property_lst.sort()
             binned_item_frequency = [len(list(group))/len(property_lst) for key, group in groupby(property_lst)]
 
+            print(property_lst)
+
             bin_labels = list(set(property_lst))
 
         else:
