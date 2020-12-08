@@ -13,7 +13,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
-from Dataset_parent import Dataset_abc
+from Dataset_parent import Dataset
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -22,7 +22,7 @@ __date__ = '08/11/2020'
 ################################################################################################################
 
 
-class House_dataset(Dataset_abc):
+class House_dataset(Dataset):
     def __init__(self,
                  nb_houses,
                  faculty_lst=["ae", "cs", "3me", "io"],
@@ -92,13 +92,13 @@ class House_dataset(Dataset_abc):
                                                                     self.statistical_properties["rent_per_room"]["sigma"],
                                                                     1)),
 
-                              "location": {"x": int(np.random.normal(self.statistical_properties["location"]["mu"],
-                                                                     self.statistical_properties["location"]["sigma"],
-                                                                     1)),
+                              "x_location": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                 self.statistical_properties["location"]["sigma"],
+                                                                 1)),
 
-                                           "y": int(np.random.normal(self.statistical_properties["location"]["mu"],
-                                                                     self.statistical_properties["location"]["sigma"],
-                                                                     1))},
+                              "y_location": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                 self.statistical_properties["location"]["sigma"],
+                                                                 1)),
 
                               "distance_from_faculties": {}
                               })
@@ -115,22 +115,20 @@ class House_dataset(Dataset_abc):
 
         for house in self.data:
             for faculty in self.faculty_data:
-                distance_vector_x = abs(house["location"]["x"] - faculty["location"]["x"])
-                distance_vector_y = abs(house["location"]["y"] - faculty["location"]["y"])
+                distance_vector_x = abs(house["x_location"] - faculty["location"]["x"])
+                distance_vector_y = abs(house["y_location"] - faculty["location"]["y"])
 
                 distance_vector_magnitude = sqrt(distance_vector_x**2 + distance_vector_y**2)
 
                 # --> Record distance vector magnitude
                 distances.append(distance_vector_magnitude)
-                house["distance_from_faculties"][faculty["name"]] = distance_vector_magnitude
+                house["distance_from_" + faculty["name"]] = distance_vector_magnitude
 
         # --> Normalise every distance for every house
         for house in self.data:
             for faculty in self.faculty_data:
-                house["distance_from_faculties"][faculty["name"]] = \
-                    (house["distance_from_faculties"][faculty["name"]] - min(distances))/(max(distances) - min(distances))
-                    
-
+                house["distance_from_" + faculty["name"]] = \
+                    (house["distance_from_" + faculty["name"]] - min(distances))/(max(distances) - min(distances))
 
     def change_statisticalproperties(self, new_statistical_properties):
         self.statistical_properties = new_statistical_properties
@@ -143,5 +141,5 @@ if __name__ == '__main__':
 
     # houses.plot_property_histogram("room_count", bin_count=7)
     # houses.plot_property_histogram("rent_per_room", bin_count=10)
-    houses.plot_property_histogram("distance_from_faculties", sub_property="ae", bin_count=10)
-    houses.plot_property_histogram("location", sub_property="x", bin_count=10)
+    houses.plot_property_histogram("distance_from_ae", bin_count=10)
+    houses.plot_property_histogram("x_location", bin_count=10)

@@ -128,8 +128,12 @@ if __name__ == '__main__':
     # students.plot_property_histogram("gender")
     # students.plot_property_histogram("study")
 
-    # students.get_property_stats("budget_min")
-    students.get_property_stats("nationality")
-    students.data[0]["nationality"] = "French"
-    students.data[1]["nationality"] = "Armenian"
-    students.get_property_stats("nationality")
+    # students.print_property_stats("nationality")
+    # students.data[0]["nationality"] = "French"
+    # students.data[1]["nationality"] = "Armenian"
+    # students.print_property_stats("nationality")
+    #
+    # students.adjust_property_bin_by_percentage("nationality", bin_ref=2, percentage_change=-50)
+
+    students.print_property_stats("budget_min")
+    students.adjust_property_bin_by_percentage("budget_min", 9, -50)
