@@ -131,5 +131,5 @@ if __name__ == '__main__':
     # students.get_property_stats("budget_min")
     students.get_property_stats("nationality")
     students.data[0]["nationality"] = "French"
-    students.data[1]["nationality"] = "Arabic"
+    students.data[1]["nationality"] = "Armenian"
     students.get_property_stats("nationality")
