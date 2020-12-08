@@ -13,6 +13,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
+from Dataset_abc import Dataset_abc
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -21,21 +22,46 @@ __date__ = '08/11/2020'
 ################################################################################################################
 
 
-class House_dataset:
+class House_dataset(Dataset_abc):
     def __init__(self,
                  nb_houses,
-                 faculty_lst=["ae", "cs", "3me"]):
-        # ----- Initialising tools
-        # --> Seeding generators
-        random.seed(345)
+                 faculty_lst=["ae", "cs", "3me", "io"]):
+        """
+        Used to generate a house dataset
+
+        Each house has for properties:
+            - Reference number
+            - Address (random)
+            - Room count (normal distribution)
+            - Location with sub-properties - x (normal distribution)
+                                           - y (normal distribution)
+            - Distance from faculties with sub-properties - every faculties from the faculty lst
+
+        :param nb_houses: Number of houses to be generated
+        :param faculty_lst: Faculties available (need to match one provided to Student_dataset)
+        """
+
+        # --> Initialise abstract class
+        super().__init__()
 
         # --> Initialising records
         self.nb_houses = nb_houses
         self.faculty_lst = faculty_lst
-
         self.data = []
         self.faculty_data = []
 
+        # --> Initialising data properties
+     
+        self.statistical_properties = {"room_count": {"mu": 3,
+                                                      "sigma": 1},
+
+                                        "rent_per_room": {"mu": 600,
+                                                          "sigma": 100},
+
+                                        "location": {"mu": 50,
+                                                    "sigma": 25}}
+
+        # ----- Generating data
         self.gen_data()
 
     def gen_data(self):
@@ -46,10 +72,22 @@ class House_dataset:
         for i in range(self.nb_houses):
             self.data.append({"ref": str(i),        # ref is made a string to better work with dictionary format adopted
                               "address": fake.address(),
-                              "room_count": random.randint(1, 7),
-                              "rent_per_room": random.randint(400, 800),
-                              "location": {"x": random.randint(0, 100),
-                                           "y": random.randint(0, 100)},
+                              "room_count": abs(int(np.random.normal(self.statistical_properties["room_count"]["mu"],
+                                                                     self.statistical_properties["room_count"]["sigma"],
+                                                                     1))) + 1,
+
+                              "rent_per_room": int(np.random.normal(self.statistical_properties["rent_per_room"]["mu"],
+                                                                    self.statistical_properties["rent_per_room"]["sigma"],
+                                                                    1)),
+
+                              "location": {"x": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                     self.statistical_properties["location"]["sigma"],
+                                                                     1)),
+
+                                           "y": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                     self.statistical_properties["location"]["sigma"],
+                                                                     1))},
+
                               "distance_from_faculties": {}
                               })
 
@@ -79,23 +117,19 @@ class House_dataset:
             for faculty in self.faculty_data:
                 house["distance_from_faculties"][faculty["name"]] = \
                     (house["distance_from_faculties"][faculty["name"]] - min(distances))/(max(distances) - min(distances))
-
-    def list_property(self, property):
-        property_lst = []
-
-        for i in range(len(self.data)):
-            property_lst.append(self.data[i][property])
-
-    def sort_by_property(self, property):
-        # --> Sorting using insertion sort (smallest to largest)
-
-        for j in range(1, len(self.data)):
-            for i in range(j, 0, -1):
-                if self.data[i][property] < self.data[i - 1][property]:
-                    self.data[i][property], self.data[i - 1][property] = \
-                        self.data[i - 1][property], self.data[i][property]
+                    
 
 
+    def change_statisticalproperties(self, new_statistical_properties):
+        self.statistical_properties = new_statistical_properties
+        
+        
 if __name__ == '__main__':
-    houses = House_dataset(10)
-    print(houses.data)
+    houses = House_dataset(150)
+    # print(houses.data)
+    # print(houses.list_property("room_count"))
+
+    # houses.plot_property_histogram("room_count", bin_count=7)
+    # houses.plot_property_histogram("rent_per_room", bin_count=10)
+    houses.plot_property_histogram("distance_from_faculties", sub_property="ae", bin_count=10)
+    houses.plot_property_histogram("location", sub_property="x", bin_count=10)
