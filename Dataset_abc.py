@@ -25,7 +25,7 @@ __date__ = '01/12/2020'
 ################################################################################################################
 
 
-class Dataset_abc:
+class Dataset:
     def __init__(self):
         # --> Seeding generators
         np.random.seed(2)
@@ -46,16 +46,15 @@ class Dataset_abc:
 
     def sort_by_property(self, property):
         # --> Sorting using insertion sort (smallest to largest)
-
         for j in range(1, len(self.data)):
             for i in range(j, 0, -1):
                 if self.data[i][property] < self.data[i - 1][property]:
                     self.data[i][property], self.data[i - 1][property] = \
                         self.data[i - 1][property], self.data[i][property]
 
-    # def post_process(self, property, sub_property=None):
+    # def post_process(self, property, bin_ref, percent_change, bin_count=10, sub_property=None):
 
-    def get_property_stats(self, property, sub_property=None, bin_count=10):
+    def get_property_stats(self, property, bin_count=10, sub_property=None):
         """
         Used to print statistical properties of a requested property, using a provided number of bins
 
@@ -76,7 +75,7 @@ class Dataset_abc:
         # --> Get binned statistical properties
         if type(property_lst[0]) is str:
             property_lst.sort()
-            binned_item_frequency = [len(list(group)) for key, group in groupby(property_lst)]
+            binned_item_frequency = [len(list(group))/len(property_lst) for key, group in groupby(property_lst)]
 
             bin_labels = list(set(property_lst))
 
@@ -99,7 +98,7 @@ class Dataset_abc:
 
         print("Bin count:", bin_count)
         for i in range(bin_count):
-            print("Bin:", bin_labels[i], "      Freq:", binned_item_frequency[i])
+            print("Ref:", i+1, "->   Bin:", bin_labels[i], "    Freq:", binned_item_frequency[i])
 
         print("\n")
 
@@ -113,7 +112,7 @@ class Dataset_abc:
 
         return
 
-    def plot_property_histogram(self, property, sub_property=None, bin_count=10):
+    def plot_property_histogram(self, property, bin_count=10, sub_property=None):
         """
         Used to generate histogram of a specific property, using a provided number of bins
 

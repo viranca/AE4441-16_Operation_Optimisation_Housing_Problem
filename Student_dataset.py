@@ -12,7 +12,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
-from Dataset_abc import Dataset_abc
+from Dataset import Dataset
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -21,10 +21,13 @@ __date__ = '08/11/2020'
 ################################################################################################################
 
 
-class Student_dataset(Dataset_abc):
+class Student_dataset(Dataset):
     def __init__(self,
                  nb_students,
-                 faculty_lst=["ae", "cs", "3me", "io"]):
+                 faculty_lst=["ae", "cs", "3me", "io"],
+                 statistical_properties=None,
+                 age_range=(18, 26),
+                 max_min_budget_difference_range=(150, 300)):
         """
         Used to generate a student dataset
 
@@ -42,7 +45,10 @@ class Student_dataset(Dataset_abc):
             - Waiting list position (random)
 
         :param nb_students: Number of student to be generated
-        :param faculty_lst: Faculties available (need to match one provided to House_dataset)
+        :param faculty_lst (list): Faculties available (need to match one provided to House_dataset)
+        :param statistical_properties (formatted dict): Dict of statistical properties, correctly formatted
+        :param age_range (tuple): Range of possible age values
+        :param max_min_budget_difference_range (tuple): Range of possible range between min and max budget
         """
 
         # --> Initialise abstract class
@@ -54,16 +60,17 @@ class Student_dataset(Dataset_abc):
         self.data = []
 
         # --> Initialising data properties
-        self.statistical_properties = {
-                                       # "age": {"mu": 3,
-                                       #         "sigma": 1},
+        if statistical_properties is None:
+            self.statistical_properties = {
+                                           "budget_min": {"mu": 300,
+                                                          "sigma": 100},
+                                           }
 
-                                       "budget_min": {"mu": 300,
-                                                      "sigma": 100},
+        else:
+            self.statistical_properties = statistical_properties
 
-                                       # "budget_max": {"mu": 600,
-                                       #                "sigma": 100},
-                                       }
+        self.age_range = age_range
+        self.max_min_budget_difference_range = max_min_budget_difference_range
 
         # ----- Generating data
         self.gen_data()
@@ -76,7 +83,7 @@ class Student_dataset(Dataset_abc):
         # ----- Initialising tools
         fake = Faker()
 
-        # --> initializing random waiting list positions 
+        # --> initializing random waiting list positions
         waiting_list_positions = [*range(self.nb_students)]
         random.shuffle(waiting_list_positions)
         
@@ -84,7 +91,7 @@ class Student_dataset(Dataset_abc):
         for i in range(self.nb_students):
             self.data.append({"ref": str(i),
                               "name": fake.name().replace(" ", "_"),
-                              "age": random.randint(18, 26),
+                              "age": random.randint(self.age_range[0], self.age_range[1]),
                               "gender": random.choice(["m", "f"]),
                               "nationality": random.choice(["Dutch", "International"]),
                               "year": None,
@@ -98,7 +105,8 @@ class Student_dataset(Dataset_abc):
 
         # --> Updating budget_max
         for i in range(len(self.data)):
-            self.data[i]["budget_max"] = self.data[i]["budget_min"] + random.randint(150, 300)
+            self.data[i]["budget_max"] = self.data[i]["budget_min"] + random.randint(max_min_budget_difference_range[0],
+                                                                                     max_min_budget_difference_range[1])
 
         # --> Updating year according to age
         for i in range(len(self.data)):
@@ -115,8 +123,8 @@ class Student_dataset(Dataset_abc):
 if __name__ == '__main__':
     students = Student_dataset(1000)
 
-    # students.plot_property_histogram("budget_min", bin_count=10)
-    # students.plot_property_histogram("budget_max", bin_count=10)
+    # students.plot_property_histogram("budget_min")
+    # students.plot_property_histogram("budget_max")
     # students.plot_property_histogram("gender")
     # students.plot_property_histogram("study")
 

@@ -25,7 +25,10 @@ __date__ = '08/11/2020'
 class House_dataset(Dataset_abc):
     def __init__(self,
                  nb_houses,
-                 faculty_lst=["ae", "cs", "3me", "io"]):
+                 faculty_lst=["ae", "cs", "3me", "io"],
+                 statistical_properties=None,
+                 x_position_range=(0, 100),
+                 y_position_range=(0, 100)):
         """
         Used to generate a house dataset
 
@@ -38,7 +41,10 @@ class House_dataset(Dataset_abc):
             - Distance from faculties with sub-properties - every faculties from the faculty lst
 
         :param nb_houses: Number of houses to be generated
-        :param faculty_lst: Faculties available (need to match one provided to Student_dataset)
+        :param faculty_lst (list): Faculties available (need to match one provided to Student_dataset)
+        :param statistical_properties (formatted dict): Dict of statistical properties, correctly formatted
+        :param x_position_range (tuple): Range of possible x positions of houses
+        :param y_position_range (tuple): Range of possible y positions of houses
         """
 
         # --> Initialise abstract class
@@ -52,14 +58,21 @@ class House_dataset(Dataset_abc):
         self.faculty_data = []
 
         # --> Initialising data properties
-        self.statistical_properties = {"room_count": {"mu": 3,
-                                                      "sigma": 1},
+        if statistical_properties is None:
+            self.statistical_properties = {"room_count": {"mu": 3,
+                                                          "sigma": 1},
 
-                                       "rent_per_room": {"mu": 600,
-                                                         "sigma": 100},
+                                           "rent_per_room": {"mu": 600,
+                                                             "sigma": 100},
 
-                                       "location": {"mu": 50,
-                                                    "sigma": 25}}
+                                           "location": {"mu": 50,
+                                                        "sigma": 25}}
+
+        else:
+            self.statistical_properties = statistical_properties
+
+        self.x_position_range = x_position_range
+        self.y_position_range = y_position_range
 
         # ----- Generating data
         self.gen_data()
@@ -95,8 +108,8 @@ class House_dataset(Dataset_abc):
         # --> Creating faculties and faculties position randomly
         for faculty in self.faculty_lst:
             self.faculty_data.append({"name": faculty,
-                                      "location": {"x": random.randint(0, 100),
-                                                   "y": random.randint(0, 100)}})
+                                      "location": {"x": random.randint(self.x_position_range[0], self.x_position_range[1]),
+                                                   "y": random.randint(self.y_position_range[0], self.y_position_range[1])}})
 
         # --> Computing distance vector between every house and every faculty
         distances = []
