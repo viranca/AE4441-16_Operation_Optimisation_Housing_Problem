@@ -13,7 +13,7 @@ import numpy as np
 from faker import Faker
 
 # Own modules
-from Dataset_abc import Dataset_abc
+from Dataset_parent import Dataset
 
 __version__ = '1.1.1'
 __author__ = 'Victor Guillet'
@@ -22,10 +22,13 @@ __date__ = '08/11/2020'
 ################################################################################################################
 
 
-class House_dataset(Dataset_abc):
+class House_dataset(Dataset):
     def __init__(self,
                  nb_houses,
-                 faculty_lst=["ae", "cs", "3me", "io"]):
+                 faculty_lst=["ae", "cs", "3me", "io"],
+                 statistical_properties=None,
+                 x_position_range=(0, 100),
+                 y_position_range=(0, 100)):
         """
         Used to generate a house dataset
 
@@ -38,7 +41,10 @@ class House_dataset(Dataset_abc):
             - Distance from faculties with sub-properties - every faculties from the faculty lst
 
         :param nb_houses: Number of houses to be generated
-        :param faculty_lst: Faculties available (need to match one provided to Student_dataset)
+        :param faculty_lst (list): Faculties available (need to match one provided to Student_dataset)
+        :param statistical_properties (formatted dict): Dict of statistical properties, correctly formatted
+        :param x_position_range (tuple): Range of possible x positions of houses
+        :param y_position_range (tuple): Range of possible y positions of houses
         """
 
         # --> Initialise abstract class
@@ -51,15 +57,21 @@ class House_dataset(Dataset_abc):
         self.faculty_data = []
 
         # --> Initialising data properties
-     
-        self.statistical_properties = {"room_count": {"mu": 3,
-                                                      "sigma": 1},
+        if statistical_properties is None:
+            self.statistical_properties = {"room_count": {"mu": 3,
+                                                          "sigma": 1},
 
-                                        "rent_per_room": {"mu": 600,
-                                                          "sigma": 100},
+                                           "rent_per_room": {"mu": 600,
+                                                             "sigma": 100},
 
-                                        "location": {"mu": 50,
-                                                    "sigma": 25}}
+                                           "location": {"mu": 50,
+                                                        "sigma": 25}}
+
+        else:
+            self.statistical_properties = statistical_properties
+
+        self.x_position_range = x_position_range
+        self.y_position_range = y_position_range
 
         # ----- Generating data
         self.gen_data()
@@ -80,13 +92,13 @@ class House_dataset(Dataset_abc):
                                                                     self.statistical_properties["rent_per_room"]["sigma"],
                                                                     1)),
 
-                              "location": {"x": int(np.random.normal(self.statistical_properties["location"]["mu"],
-                                                                     self.statistical_properties["location"]["sigma"],
-                                                                     1)),
+                              "x_location": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                 self.statistical_properties["location"]["sigma"],
+                                                                 1)),
 
-                                           "y": int(np.random.normal(self.statistical_properties["location"]["mu"],
-                                                                     self.statistical_properties["location"]["sigma"],
-                                                                     1))},
+                              "y_location": int(np.random.normal(self.statistical_properties["location"]["mu"],
+                                                                 self.statistical_properties["location"]["sigma"],
+                                                                 1)),
 
                               "distance_from_faculties": {}
                               })
@@ -95,30 +107,28 @@ class House_dataset(Dataset_abc):
         # --> Creating faculties and faculties position randomly
         for faculty in self.faculty_lst:
             self.faculty_data.append({"name": faculty,
-                                      "location": {"x": random.randint(0, 100),
-                                                   "y": random.randint(0, 100)}})
+                                      "location": {"x": random.randint(self.x_position_range[0], self.x_position_range[1]),
+                                                   "y": random.randint(self.y_position_range[0], self.y_position_range[1])}})
 
         # --> Computing distance vector between every house and every faculty
         distances = []
 
         for house in self.data:
             for faculty in self.faculty_data:
-                distance_vector_x = abs(house["location"]["x"] - faculty["location"]["x"])
-                distance_vector_y = abs(house["location"]["y"] - faculty["location"]["y"])
+                distance_vector_x = abs(house["x_location"] - faculty["location"]["x"])
+                distance_vector_y = abs(house["y_location"] - faculty["location"]["y"])
 
                 distance_vector_magnitude = sqrt(distance_vector_x**2 + distance_vector_y**2)
 
                 # --> Record distance vector magnitude
                 distances.append(distance_vector_magnitude)
-                house["distance_from_faculties"][faculty["name"]] = distance_vector_magnitude
+                house["distance_from_" + faculty["name"]] = distance_vector_magnitude
 
         # --> Normalise every distance for every house
         for house in self.data:
             for faculty in self.faculty_data:
-                house["distance_from_faculties"][faculty["name"]] = \
-                    (house["distance_from_faculties"][faculty["name"]] - min(distances))/(max(distances) - min(distances))
-                    
-
+                house["distance_from_" + faculty["name"]] = \
+                    (house["distance_from_" + faculty["name"]] - min(distances))/(max(distances) - min(distances))
 
     def change_statisticalproperties(self, new_statistical_properties):
         self.statistical_properties = new_statistical_properties
@@ -131,5 +141,5 @@ if __name__ == '__main__':
 
     # houses.plot_property_histogram("room_count", bin_count=7)
     # houses.plot_property_histogram("rent_per_room", bin_count=10)
-    houses.plot_property_histogram("distance_from_faculties", sub_property="ae", bin_count=10)
-    houses.plot_property_histogram("location", sub_property="x", bin_count=10)
+    houses.plot_property_histogram("distance_from_ae", bin_count=10)
+    houses.plot_property_histogram("x_location", bin_count=10)
