@@ -3,9 +3,14 @@ from House_dataset import House_dataset
 from Model_generator import Model_generator
 from math import sqrt
 
-def move_faculties_closer_to_houses(houses, percent):
+def move_some_houses(houses, percent):
     """
-    Move faculties closer to average house location
+    Used to move some houses closer to the average faculty location.
+
+    :param property: Property of data to plot
+    :param sub_property: Sub property if property has multiple sub-properties
+    :param bin_count: Number of bins to use (set automatically for str properties)
+    Move some houses closer to faculty
     percent should be given in decimals, so 20% = 0.2 input
 
     Once the average house locations in x,y are known, the distance per
@@ -72,11 +77,14 @@ def move_faculties_closer_to_houses(houses, percent):
     return houses
 
 if __name__ == '__main__':
-    students = Student_dataset(100, ["ae"])
+    """
+    Set up Verification Scenario, 1000 students and 100 houses
+    """
+    students = Student_dataset(1000, ["ae"])
     students.get_property_stats("budget_min")
     students.get_property_stats("study")
 
-    houses = House_dataset(10, ["ae"])
+    houses = House_dataset(100, ["ae"])
     houses.plot_property_histogram("distance_from_faculties",
                                    sub_property="ae", bin_count=10)
     houses.plot_property_histogram("location", sub_property="x",
@@ -87,17 +95,23 @@ if __name__ == '__main__':
 
     print("********Testing faculty movement effect********\n\n")
 
-    """Test move faculties closer to average house location effect
+    """Test moving some houses closer to faculties average location
     Expected: objective function increases as the distance to faculties 
-    should be lower
+    should be smaller
     """
-    houses2 = move_faculties_closer_to_houses(houses, 1)
+    houses2 = move_some_houses(houses, 1)
     model2 = Model_generator(students, houses2)
     model2.optimize()
     houses.plot_property_histogram("distance_from_faculties",
                                    sub_property="ae", bin_count=10)
     houses.plot_property_histogram("location", sub_property="x",
                                    bin_count=10)
+    print(model2.model.
+    """Test decreasing the house costs
+    Expected: objective function increases
+    """
+    
+    
     """Test decreasing the house costs
     Expected: objective function increases
     """
