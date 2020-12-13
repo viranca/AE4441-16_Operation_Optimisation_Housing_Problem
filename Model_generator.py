@@ -253,6 +253,6 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(100), House_dataset(15))
+    model = Model_generator(Student_dataset(10), House_dataset(4))
     model.output_to_lp()
     model.optimize()

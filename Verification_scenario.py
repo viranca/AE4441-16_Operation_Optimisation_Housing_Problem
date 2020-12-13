@@ -2,117 +2,193 @@ from Student_dataset import Student_dataset
 from House_dataset import House_dataset
 from Model_generator import Model_generator
 from math import sqrt
+import copy
+
+
+def change_house_shared(houses, percent):
+    count_single_to_be = int(len(houses.data) * percent)
+    count_single = 0
+    for house in houses.data:
+        if house['room_count'] == 1:
+            count_single += 1
+    change_count = count_single_to_be - count_single
+    for house in houses.data:
+        if change_count <= 0:
+            break
+        if house['room_count'] != 1:
+            house['room_count'] = 1
+            change_count -= 1
+
+    return houses
 
 def move_some_houses(houses, percent):
     """
-    Used to move some houses closer to the average faculty location.
+    Used to move some houses on top of the average faculty location.
 
-    :param property: Property of data to plot
-    :param sub_property: Sub property if property has multiple sub-properties
-    :param bin_count: Number of bins to use (set automatically for str properties)
-    Move some houses closer to faculty
-    percent should be given in decimals, so 20% = 0.2 input
+    :param houses: The houses object from the house_dataset
+    :param percent: The percentage of houses you want to move (input in
+    decimals; 0.2 = 20%)
+    :param distance: Distance in x AND y to move houses closer to avg
+    faculty, positive value means closer, negative means further away.
 
-    Once the average house locations in x,y are known, the distance per
-    faculty to the average house location is found. Then, the input
-    percentage is used on this distance (s.t. if percent is 100% the faculty
-    is moved directly on top of the average house location)
+    Calculate average faculty locations in x,y then move a percentage of
+    houses will be moved x, y distance in the right direction away or to the
+    faculties depending on the location of each house.
     """
 
     avg_x = 0
     avg_y = 0
-    number_of_houses = len(houses.data)
-    """Get average x,y position of houses"""
-    for house in houses.data:
-        avg_x += house['location']['x']
-        avg_y += house['location']['y']
-    avg_x /= number_of_houses
-    avg_y /= number_of_houses
-    print("average x: {}, average y: {}".format(avg_x,avg_y))
-
-    """Move faculties percentage wise closer to average house locations"""
+    number_of_faculties = len(houses.faculty_lst)
+    """Get average x,y position of faculties"""
     for faculty in houses.faculty_data:
-        distance_faculty_avg_house_x = abs(faculty['location']['x'] - avg_x)
-        distance_faculty_avg_house_y = abs(faculty['location']['y'] - avg_y)
-        print(distance_faculty_avg_house_x,distance_faculty_avg_house_y)
-        print("Original Faculty name: {}, (x,y):({},{})".format(
-            faculty['name'],faculty['location']['x'],faculty['location']['y']))
-        if avg_x > faculty['location']['x']:
-            faculty['location']['x'] += distance_faculty_avg_house_x*percent
-        else:
-            faculty['location']['x'] -= distance_faculty_avg_house_x*percent
-        if avg_y > faculty['location']['y']:
-            faculty['location']['y'] += distance_faculty_avg_house_y*percent
-        else:
-            faculty['location']['y'] -= distance_faculty_avg_house_y*percent
-        print("Changed Faculty name: {}, (x,y):({},{})".format(faculty['name'],
-                                                         faculty['location'][
-                                                             'x'],faculty['location']['y']))
+        avg_x += faculty['location']['x']
+        avg_y += faculty['location']['y']
+    avg_x /= number_of_faculties
+    avg_y /= number_of_faculties
+    print("average x: {}, average y: {}".format(avg_x, avg_y))
 
-        # Recalculate house distances
-        # --> Computing distance vector between every house and every faculty
-        distances = []
+    number_of_houses = len(houses.data)
+    """Move percentage of houses to average faculty location"""
+    for i in range(int(number_of_houses*percent)):
+        houses.data[i]['x_location'] = avg_x
+        houses.data[i]['y_location'] = avg_y
 
-        for house in houses.data:
-            for faculty in houses.faculty_data:
-                distance_vector_x = abs(
-                    house["location"]["x"] - faculty["location"]["x"])
-                distance_vector_y = abs(
-                    house["location"]["y"] - faculty["location"]["y"])
+    # --> Recompute distance vector between every house and every faculty
+    distances = []
 
-                distance_vector_magnitude = sqrt(
-                    distance_vector_x ** 2 + distance_vector_y ** 2)
+    for house in houses.data:
+        for faculty in houses.faculty_data:
+            distance_vector_x = abs(
+                house["x_location"] - faculty["location"]["x"])
+            distance_vector_y = abs(
+                house["y_location"] - faculty["location"]["y"])
 
-                # --> Record distance vector magnitude
-                distances.append(distance_vector_magnitude)
-                house["distance_from_faculties"][
-                    faculty["name"]] = distance_vector_magnitude
+            distance_vector_magnitude = sqrt(
+                distance_vector_x ** 2 + distance_vector_y ** 2)
 
-        # --> Normalise every distance for every house
-        for house in houses.data:
-            for faculty in houses.faculty_data:
-                house["distance_from_faculties"][faculty["name"]] = \
-                    (house["distance_from_faculties"][faculty["name"]] - min(
-                        distances)) / (max(distances) - min(distances))
+            # --> Record distance vector magnitude
+            distances.append(distance_vector_magnitude)
+            house["distance_from_" + faculty[
+                "name"]] = distance_vector_magnitude
+
+    # --> Normalise every distance for every house
+    for house in houses.data:
+        for faculty in houses.faculty_data:
+            house["distance_from_" + faculty["name"]] = \
+                (house["distance_from_" + faculty["name"]] - min(
+                    distances)) / (max(distances) - min(distances))
+
     return houses
 
 if __name__ == '__main__':
     """
-    Set up Verification Scenario, 1000 students and 100 houses
+    Set up Verification Scenario, 1000 students and 100 houses, 4 faculties, 
+    standard statistical properties
     """
-    students = Student_dataset(1000, ["ae"])
-    students.get_property_stats("budget_min")
-    students.get_property_stats("study")
+    students = Student_dataset(1000, ["ae", "cs", "3me", "io"])
 
-    houses = House_dataset(100, ["ae"])
-    houses.plot_property_histogram("distance_from_faculties",
-                                   sub_property="ae", bin_count=10)
-    houses.plot_property_histogram("location", sub_property="x",
-                                   bin_count=10)
+    houses = House_dataset(100, ["ae", "cs", "3me", "io"])
 
     model = Model_generator(students, houses)
     model.optimize()
 
+    print("Objective value of original dataset: {}".format(model.model.ObjVal))
+
     print("********Testing faculty movement effect********\n\n")
 
-    """Test moving some houses closer to faculties average location
+
+
+    """Test moving some houses exactly on top of the faculties average location
     Expected: objective function increases as the distance to faculties 
     should be smaller
     """
-    houses2 = move_some_houses(houses, 1)
+    houses2 = copy.deepcopy(houses)
+    houses2 = move_some_houses(houses2, 0.3)
     model2 = Model_generator(students, houses2)
     model2.optimize()
-    houses.plot_property_histogram("distance_from_faculties",
-                                   sub_property="ae", bin_count=10)
-    houses.plot_property_histogram("location", sub_property="x",
-                                   bin_count=10)
-    print(model2.model.
-    """Test decreasing the house costs
+    print("Objective value of moved houses dataset: {}".format(
+        model2.model.ObjVal))
+    print("Difference in Objective value of moved houses dataset: {}".format(
+        model2.model.ObjVal - model.model.ObjVal))
+    houses.plot_property_histogram("x_location", bin_count=10)
+    houses2.plot_property_histogram("x_location", bin_count=10)
+    houses.plot_property_histogram("y_location", bin_count=10)
+    houses2.plot_property_histogram("y_location", bin_count=10)
+    
+    houses2 = copy.deepcopy(houses)
+    houses2 = move_some_houses(houses2, 0.5)
+    houses2.plot_property_histogram("x_location", bin_count=10)
+    houses2.plot_property_histogram("y_location", bin_count=10)
+    model2 = Model_generator(students, houses2)
+    model2.optimize()
+    print("Objective value of moved houses 2 dataset: {}".format(
+        model2.model.ObjVal))
+    print("Difference in Objective value of moved houses 2 dataset: {}".format(
+        model2.model.ObjVal - model.model.ObjVal))
+
+
+
+    """Test decreasing the house costs from mu of 600 to mu of 450 to mu of 300
     Expected: objective function increases
     """
-    
-    
-    """Test decreasing the house costs
-    Expected: objective function increases
+    houses3 = House_dataset(100, ["ae", "cs", "3me", "io"], {"room_count": {
+        "mu": 3,
+                                                          "sigma": 1},
+
+                                           "rent_per_room": {"mu": 450,
+                                                             "sigma": 100},
+
+                                           "location": {"mu": 50,
+                                                        "sigma": 25}})
+    houses.plot_property_histogram("rent_per_room", bin_count=10)
+    houses3.plot_property_histogram("rent_per_room", bin_count=10)
+    model3 = Model_generator(students, houses3)
+    model3.optimize()
+    print("Objective value of cheaper rent dataset: {}".format(
+        model3.model.ObjVal))
+    print("Difference in Objective value of cheaper rent dataset: {}".format(
+        model3.model.ObjVal - model.model.ObjVal))
+
+    houses3 = House_dataset(100, ["ae", "cs", "3me", "io"], {"room_count": {
+        "mu": 3,
+                                                          "sigma": 1},
+
+                                           "rent_per_room": {"mu": 300,
+                                                             "sigma": 100},
+
+                                           "location": {"mu": 50,
+                                                        "sigma": 25}})
+    houses3.plot_property_histogram("rent_per_room", bin_count=10)
+    model3 = Model_generator(students, houses3)
+    model3.optimize()
+    print("Objective value of cheaper rent 2 dataset: {}".format(
+        model3.model.ObjVal))
+    print("Difference in Objective value of cheaper rent 2 dataset: {}".format(
+        model3.model.ObjVal - model.model.ObjVal))
+
+
+
+    """Test increasing the percentage of single housing from 50 percent to 60 to 70 percent
+    Expected: objective function increases since the preferences are 50 50 
+    and there are more shared houses
     """
-    # houses3 = increase_house_price(houses, 0.1)
+    houses4 = copy.deepcopy(houses)
+    houses.plot_property_histogram("room_count", bin_count=10)
+    houses4 = change_house_shared(houses4, 0.6)
+    houses4.plot_property_histogram("room_count", bin_count=10)
+    model4 = Model_generator(students, houses4)
+    model4.optimize()
+    print("Objective value of more single rooms dataset: {}".format(
+        model4.model.ObjVal))
+    print("Difference in Objective value of more single rooms dataset: {}".format(
+        model4.model.ObjVal - model.model.ObjVal))
+
+    houses4 = copy.deepcopy(houses)
+    houses4 = change_house_shared(houses4, 0.7)
+    houses4.plot_property_histogram("room_count", bin_count=10)
+    model4 = Model_generator(students, houses4)
+    model4.optimize()
+    print("Objective value of more single rooms 2 dataset: {}".format(
+        model4.model.ObjVal))
+    print("Difference in Objective value of more single rooms dataset: {}".format(
+        model4.model.ObjVal - model.model.ObjVal))
