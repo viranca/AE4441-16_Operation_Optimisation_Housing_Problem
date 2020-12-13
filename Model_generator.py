@@ -83,7 +83,7 @@ class Model_generator:
                 # --> Distance from the faculty
                 # (value is 1 - distance from faculty cooresponding to studies)
                 pair_quality_dict[student["ref"]][house["ref"]] += \
-                    1 - house["distance_from_faculties"][student["study"]] * distance_weight
+                    1 - house["distance_from_" + student["study"]] * distance_weight
 
                 # --> Shared vs single housing (value is 1 if constraint is met, otherwise 0)
                 if student["preference"] == "single" and house["room_count"] == 1 \
