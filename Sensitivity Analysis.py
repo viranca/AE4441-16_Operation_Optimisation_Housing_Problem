@@ -163,7 +163,7 @@ statistical_properties_rentplus10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_rentplus10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration rentplus10: ' + str(i))
 print('The objective value for the rentplus10 model equals:' , statistics.mean(solutions_model))  
@@ -184,7 +184,7 @@ statistical_properties_rentmin10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_rentmin10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration rentmin10: ' + str(i))
 print('The objective value for the rentmin10 model equals:' , statistics.mean(solutions_model))  
@@ -205,7 +205,7 @@ statistical_properties_locationplus10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_locationplus10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration locationplus10: ' + str(i))
 print('The objective value for the locationplus10 model equals:' , statistics.mean(solutions_model))  
@@ -226,7 +226,7 @@ statistical_properties_locationmin10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_locationmin10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration locationmin10: ' + str(i))
 print('The objective value for the locationmin10 model equals:' , statistics.mean(solutions_model))  
@@ -247,7 +247,7 @@ statistical_properties_budgetplus10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_budgetplus10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration budgetplus10: ' + str(i))
 print('The objective value for the budgetplus10 model equals:' , statistics.mean(solutions_model))  
@@ -270,7 +270,7 @@ statistical_properties_budgetmin10 = {"room_count": {"mu": 3,
 
 solutions_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_roomcountmin10))
+    solutions_model.append(run_model(number_of_students, number_of_houses, statistical_properties_budgetmin10))
     #print('\x1b[2K' , "iteration {}".format(i) +'\r',  end ='')
     print_statusline('iteration budgetmin10: ' + str(i))
 print('The objective value for the budgetmin10 model equals:' , statistics.mean(solutions_model))  
