@@ -99,8 +99,6 @@ class House_dataset(Dataset):
                               "y_location": int(np.random.normal(self.statistical_properties["location"]["mu"],
                                                                  self.statistical_properties["location"]["sigma"],
                                                                  1)),
-
-                              "distance_from_faculties": {}
                               })
 
         # ----- Creating faculties
