@@ -32,6 +32,9 @@ class Model_generator:
 
         # ---- Creating model
         self.model = gp.Model("OO_assignment_model")
+        
+        # --> Disabling the gurobi console output, set to 1 to enable
+        self.model.Params.OutputFlag=0
 
         # --> Preforming data pre-processing
         self.pair_quality_dict, self.decision_variable_dict = self.pre_process_data()
@@ -46,7 +49,7 @@ class Model_generator:
         self.build_gender_split_constraints()
         self.build_first_year_priority_constraint()
 
-        print("Model construction completed")
+        #print("Model construction completed")
 
     def pre_process_data(self):
         """
