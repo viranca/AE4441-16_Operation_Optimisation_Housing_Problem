@@ -253,6 +253,10 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(10), House_dataset(4))
+    # Settings small verification scenario: random.seed(34), 9 students,
+    # ae, cs and 2 houses.
+    model = Model_generator(Student_dataset(9,["ae", "cs"]), House_dataset(2,
+                                                                           ["ae", "cs"]))
+
     model.output_to_lp()
     model.optimize()
