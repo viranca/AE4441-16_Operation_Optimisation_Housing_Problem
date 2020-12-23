@@ -251,7 +251,7 @@ class Dataset:
 
                 # --> Change datapoint if datapoint matches bin to change/change mode
                 if adjustment_mode == "Increase":
-                    print(bin_ref_label_formatted)
+                    #print(bin_ref_label_formatted)
                     if self.data[random_datapoint_ref][property] < bin_ref_label_formatted[0] \
                             or self.data[random_datapoint_ref][property] > bin_ref_label_formatted[1]:
                         self.data[random_datapoint_ref][property] = random.randint(bin_ref_label_formatted[0],
@@ -278,10 +278,11 @@ class Dataset:
 
                     else:
                         pass
-
-        print("=========================================================== Dataset adjustment successful")
-        print("Dataset new statistical properties:")
-        self.print_property_stats(property, bin_count)
+                    
+        ##Removed for sensitivity analysis.
+        #print("=========================================================== Dataset adjustment successful")
+        #print("Dataset new statistical properties:")
+        #self.print_property_stats(property, bin_count)
 
         return
 
