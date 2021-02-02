@@ -32,8 +32,8 @@ def run_model(number_of_students, number_of_houses, statistical_properties):
           solution.append([v.varName,v.x])
           if v.x != 0:
               allocated += 1 
-    print(solution)
-    print(allocated)
+    #print(solution)
+    #print(allocated)
     return model.model.ObjVal, allocated
 
 
