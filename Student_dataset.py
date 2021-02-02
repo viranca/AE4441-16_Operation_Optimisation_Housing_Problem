@@ -135,5 +135,5 @@ if __name__ == '__main__':
     #
     # students.adjust_property_bin_by_percentage("nationality", bin_ref=2, percentage_change=-50)
 
-    students.print_property_stats("budget_min")
-    students.adjust_property_bin_by_percentage("budget_min", 9, -50)
+    #students.print_property_stats("budget_min")
+    #students.adjust_property_bin_by_percentage("budget_min", 9, -50)

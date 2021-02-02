@@ -10,7 +10,7 @@ def print_statusline(msg: str):
     last_msg_length = len(print_statusline.last_msg) if hasattr(print_statusline, 'last_msg') else 0
     print(' ' * last_msg_length, end='\r')
     print(msg, end='\r')
-    sys.stdout.flush()  # Some say they needed this, I didn't.
+    sys.stdout.flush()  
     print_statusline.last_msg = msg
 
 
@@ -25,12 +25,16 @@ def run_model(number_of_students, number_of_houses, statistical_properties):
     model.output_to_lp()
     model.optimize()
 
-    # #print all x_ij:
-    # solution = []   
-    # for v in model.model.getVars():
-    #       solution.append([v.varName,v.x])
-    #print(solution)
-    return model.model.ObjVal
+    #print all x_ij:
+    solution = [] 
+    allocated = 0
+    for v in model.model.getVars():
+          solution.append([v.varName,v.x])
+          if v.x != 0:
+              allocated += 1 
+    print(solution)
+    print(allocated)
+    return model.model.ObjVal, allocated
 
 
 """
@@ -41,7 +45,7 @@ Set inputs and statistical properties for the base model:
 
 number_of_students = 100
 number_of_houses = 15
-number_of_montecarlo_iterations = 100
+number_of_montecarlo_iterations = 10
 
 #The nine properties are:
 #room_count, rent_per_room, location, budget_min, year, gender, nationality, study and preference
@@ -113,7 +117,6 @@ model.optimize()
 print(model.model.ObjVal)
 
 """
-#%%
 
 
 """
@@ -126,10 +129,14 @@ define the function that runs the model, and run the base model:
 
 
 solutions_base_model = []
+allocated_base_model = []
 for i in range(number_of_montecarlo_iterations):
-    solutions_base_model.append(run_model(number_of_students, number_of_houses, statistical_properties_base))
+    solutions_base_model.append(run_model(number_of_students, number_of_houses, statistical_properties_base)[0])
+    allocated_base_model.append(run_model(number_of_students, number_of_houses, statistical_properties_base)[1])
     print_statusline('iteration base model: ' + str(i))
-print('The objective value for the base model equals:' , statistics.mean(solutions_base_model))    
+print('The objective value for the base model equals:' , statistics.mean(solutions_base_model),
+      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students)        
 
 
 

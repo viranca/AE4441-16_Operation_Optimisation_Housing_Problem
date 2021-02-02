@@ -130,6 +130,7 @@ class Model_generator:
                 # --> Creating and recording decision variable for corresponding pair in decision variable dictionary
                 decision_variable_dict[student["ref"]][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name=variable_name)
+                   
         
         return pair_quality_dict, decision_variable_dict
 
