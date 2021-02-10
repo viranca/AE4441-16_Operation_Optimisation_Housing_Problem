@@ -70,6 +70,7 @@ statistical_properties_base = {"room_count": {"mu": 3,
                           "budget_min": {"mu": 300,
                                          "sigma": 100}}
 
+
 Student_dataset1 = Student_dataset(number_of_students, statistical_properties=statistical_properties_base)
 House_dataset1 = House_dataset(number_of_houses, statistical_properties=statistical_properties_base)
 
@@ -505,7 +506,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -567,7 +568,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -628,7 +629,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -688,7 +689,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -749,7 +750,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -809,7 +810,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -872,7 +873,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -935,7 +936,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -998,7 +999,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -1061,7 +1062,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -1123,7 +1124,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
@@ -1184,7 +1185,7 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
-    solutions_base_model.append(objVal)
+    solutions_base_model.append(model.model.objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
