@@ -30,6 +30,9 @@ class Model_generator:
         self.student_dataset = student_data
         self.house_dataset = house_data
 
+        self.decision_variable_dict = {"x": {},
+                                       "y": {}}
+
         # ---- Creating model
         self.model = gp.Model("OO_assignment_model")
         
@@ -37,19 +40,20 @@ class Model_generator:
         self.model.Params.OutputFlag=0
 
         # --> Preforming data pre-processing
-        self.pair_quality_dict, self.decision_variable_dict = self.pre_process_data()
+        self.pair_quality_dict = self.pre_process_data()
         self.model.update()
-
-        # --> Building objective function
-        self.build_objective()
 
         # --> Setting up constraints
         self.build_demand_constraints()
         self.build_supply_constraints()
         self.build_gender_split_constraints()
         self.build_first_year_priority_constraint()
+        self.build_studies_constraint()
 
-        #print("Model construction completed")
+        # --> Building objective function
+        self.build_objective()
+
+        print("Model construction completed")
 
     def pre_process_data(self):
         """
@@ -84,7 +88,7 @@ class Model_generator:
                 # (The better the pair quality, the higher the returned value)
 
                 # --> Distance from the faculty
-                # (value is 1 - distance from faculty cooresponding to studies)
+                # (value is 1 - distance from faculty corresponding to studies)
                 pair_quality_dict[student["ref"]][house["ref"]] += \
                     1 - house["distance_from_" + student["study"]] * distance_weight
 
@@ -113,26 +117,24 @@ class Model_generator:
                     pair_quality_dict[student["ref"]][house["ref"]] += 1 * budget_weight
 
         # ========================== Decision variable dictionary generation =================
-        # --> Creating decision variable dictionary
-        decision_variable_dict = {}
+        # --> Adding decision variables dictionary
 
         for student in self.student_dataset.data:
             # --> Creating entry for student in decision variable dictionary
-            decision_variable_dict[student["ref"]] = {}
+            self.decision_variable_dict["x"][student["ref"]] = {}
 
             for house in self.house_dataset.data:
                 # --> Creating entry for student in decision variable dictionary
-                decision_variable_dict[student["ref"]][house["ref"]] = None
+                self.decision_variable_dict["x"][student["ref"]][house["ref"]] = None
 
                 # --> Generating decision variable name according to convention x_student-ref_house-ref
                 variable_name = "x_" + str(student["ref"]) + "_" + str(house["ref"])
 
                 # --> Creating and recording decision variable for corresponding pair in decision variable dictionary
-                decision_variable_dict[student["ref"]][house["ref"]] = \
+                self.decision_variable_dict["x"][student["ref"]][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name=variable_name)
-                   
-        
-        return pair_quality_dict, decision_variable_dict
+                    
+        return pair_quality_dict
 
     def build_objective(self):
         """
@@ -148,8 +150,19 @@ class Model_generator:
         for student in self.student_dataset.data:
             for house in self.house_dataset.data:
                 # --> Adding variable to model with pair quality
-                objective_function += self.decision_variable_dict[student["ref"]][house["ref"]] \
+                objective_function += self.decision_variable_dict["x"][student["ref"]][house["ref"]] \
                     * self.pair_quality_dict[student["ref"]][house["ref"]]
+
+        # --> Adding all other variables
+        # objective_function = self.recursive_add_to_linear_expression(self.decision_variable_dict["y"],
+        #                                                              objective_function)
+
+        # for house in self.decision_variable_dict["y"]:
+        #     sub_expression = self.recursive_add_to_linear_expression(house, gp.LinExpr())
+        #
+        #     house_room_count =
+        #
+        #     sub_expression = (sub_expression - 1) * self.house_dataset.data
 
         # --> Setting objective
         self.model.setObjective(objective_function, GRB.MAXIMIZE)
@@ -168,12 +181,12 @@ class Model_generator:
             constraint_name = "C_demand_" + str(student["ref"])
 
             # --> Adding all decision variables (corresponding to given student) to constraint
-            demand_constraint = gp.LinExpr()
+            constraint = gp.LinExpr()
 
             for house in self.house_dataset.data:
-                demand_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
+                constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
-            self.model.addConstr(demand_constraint <= 1, constraint_name)
+            self.model.addConstr(constraint <= 1, constraint_name)
 
     def build_supply_constraints(self):
         """
@@ -189,12 +202,12 @@ class Model_generator:
             constraint_name = "C_supply_" + str(house["ref"])
 
             # --> Adding all decision variables (corresponding to given house) to constraint
-            supply_constraint = gp.LinExpr()
+            constraint = gp.LinExpr()
 
             for student in self.student_dataset.data:
-                supply_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
+                constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
-            self.model.addConstr(supply_constraint == house["room_count"], constraint_name)
+            self.model.addConstr(constraint == house["room_count"], constraint_name)
 
     def build_gender_split_constraints(self):
         """
@@ -211,13 +224,13 @@ class Model_generator:
                 constraint_name = "C_gs_" + str(house["ref"])
 
                 # --> Adding all decision variables (corresponding to given house) to constraint
-                gs_constraint = gp.LinExpr()
+                constraint = gp.LinExpr()
 
                 for student in self.student_dataset.data:
                     if student["gender"] == "f":
-                        gs_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
+                        constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
-                self.model.addConstr(gs_constraint >= 2, constraint_name)
+                self.model.addConstr(constraint >= 2, constraint_name)
 
     def build_first_year_priority_constraint(self):
         """
@@ -228,7 +241,7 @@ class Model_generator:
         :return: None
         """
         # --> Adding all decision variables (corresponding to 1st year students) to constraint
-        fyp_constraint = gp.LinExpr()
+        constraint = gp.LinExpr()
 
         fy_students_count = 0
 
@@ -237,13 +250,77 @@ class Model_generator:
                 fy_students_count += 1
 
                 for house in self.house_dataset.data:
-                    fyp_constraint += self.decision_variable_dict[student["ref"]][house["ref"]]
+                    constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
-        self.model.addConstr(fyp_constraint == fy_students_count, "fyp")
+        self.model.addConstr(constraint == fy_students_count, "C_fyp")
+
+    def build_nationality_constraint(self):
+
+        return
+
+    def build_studies_constraint(self):
+        """
+
+        :return:
+        """
+
+        for house in self.house_dataset.data:
+            if house["room_count"] > 1:
+                # --> Creating house entry in decision_variable_dict
+                self.decision_variable_dict["y"][house["ref"]] = {}
+
+                # --> Creating list of study constraints corresponding to study
+                for study in self.student_dataset.faculty_lst:
+                    # --> Creating study entry in decision_variable_dict[house]
+                    self.decision_variable_dict["y"][house["ref"]][study] = {}
+
+                    # --> Generating constraint name according to convention C_gs_house-ref
+                    constraint_name = "C_study_" + study + "_" + str(house["ref"])
+
+                    # --> Adding all decision variables (corresponding to given house) to constraint
+                    constraint = gp.LinExpr()
+
+                    for student in self.student_dataset.data:
+                        if student["study"] == study:
+                            constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
+
+                    # --> Creating and recording decision variable for corresponding K out of N constraint
+                    self.decision_variable_dict["y"][house["ref"]][study] = \
+                        self.model.addVar(vtype=GRB.BINARY, name="y_study_" + study + "_" + str(house["ref"]))
+
+                    # --> Creating summation of student in house must have the same study constraint
+                    self.model.addConstr(constraint >= house["room_count"]
+                                         - house["room_count"] * self.decision_variable_dict["y"][house["ref"]][study],
+                                         constraint_name)
+
+                # --> Creating K (= 1) out of N (= nb. of studies available) constraint
+                constraint = self.recursive_add_to_linear_expression(self.decision_variable_dict["y"][house["ref"]],
+                                                                     gp.LinExpr())
+
+                self.model.addConstr(constraint == 1, "Study_K_of_N_" + house["ref"])
+
+        return
+
+    def recursive_add_to_linear_expression(self, decision_variable_dict, linear_expression):
+        """
+        Recursively add all the variables stored in a dictionary to a gurobi linear expression
+
+        :param decision_variable_dict: Dictionary to be recursively iterated through
+        :param linear_expression: Linear expression to append to
+        :return: augmented linear expression
+        """
+
+        for _, variable in decision_variable_dict.items():
+            if isinstance(variable, dict):
+                self.recursive_add_to_linear_expression(variable, linear_expression)
+            else:
+                if variable is not None:
+                    linear_expression += variable
+        return linear_expression
 
     def output_to_lp(self):
         """
-        Used to generate an LP fiule from the generated model
+        Used to generate an LP file from the generated model
 
         :return: None
         """
@@ -253,15 +330,12 @@ class Model_generator:
     def optimize(self):
         self.model.optimize()
 
+
 if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    # Settings small verification scenario: random.seed(34), 9 students,
-    # ae, cs and 2 houses.
-    model = Model_generator(Student_dataset(9,["ae", "cs"]), House_dataset(2,
-                                                                           ["ae", "cs"]))
-
+    model = Model_generator(Student_dataset(100), House_dataset(15))
     model.output_to_lp()
     model.optimize()
 
