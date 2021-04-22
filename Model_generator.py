@@ -26,6 +26,9 @@ __date__ = '19/11/2020'
 
 class Model_generator:
     def __init__(self, student_data, house_data):
+
+        assert(sum(house_data.list_property("room_count")) <= len(student_data.data))
+
         # --> Setting up records
         self.student_dataset = student_data
         self.house_dataset = house_data
@@ -391,7 +394,17 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(15), House_dataset(4))
+    # random.seed = 0
+
+    student_data = Student_dataset(15)
+    house_data = House_dataset(4)
+
+    print(student_data.list_property("gender"))
+    print(student_data.list_property("nationality"))
+
+    print(sum(house_data.list_property("room_count")))
+
+    model = Model_generator(student_data, house_data)
 
     model.output_to_lp()
     model.optimize()
