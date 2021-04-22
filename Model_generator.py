@@ -30,14 +30,14 @@ class Model_generator:
         self.student_dataset = student_data
         self.house_dataset = house_data
 
-        self.decision_variable_dict = {"x": {},
-                                       "y": {}}
+        self.decision_variable_dict = {"x": {},     # Decision variables
+                                       "y": {}}     # Slack/Artificial/Surplus variables
 
         # ---- Creating model
         self.model = gp.Model("OO_assignment_model")
         
         # --> Disabling the gurobi console output, set to 1 to enable
-        self.model.Params.OutputFlag=0
+        self.model.Params.OutputFlag = 1
 
         # --> Preforming data pre-processing
         self.pair_quality_dict = self.pre_process_data()
@@ -154,8 +154,8 @@ class Model_generator:
                     * self.pair_quality_dict[student["ref"]][house["ref"]]
 
         # --> Adding all other variables
-        # objective_function = self.recursive_add_to_linear_expression(self.decision_variable_dict["y"],
-        #                                                              objective_function)
+        objective_function = self.recursive_add_to_linear_expression(self.decision_variable_dict["y"],
+                                                                     objective_function)
 
         # for house in self.decision_variable_dict["y"]:
         #     sub_expression = self.recursive_add_to_linear_expression(house, gp.LinExpr())
@@ -260,6 +260,9 @@ class Model_generator:
 
     def build_studies_constraint(self):
         """
+        Used to generate the study constraints (1 per house)
+
+            "sum of decisions variables of all students of a given study for a given house == 1"
 
         :return:
         """
@@ -274,7 +277,7 @@ class Model_generator:
                     # --> Creating study entry in decision_variable_dict[house]
                     self.decision_variable_dict["y"][house["ref"]][study] = {}
 
-                    # --> Generating constraint name according to convention C_gs_house-ref
+                    # --> Generating constraint name according to convention C_study_"study"_"house-ref"
                     constraint_name = "C_study_" + study + "_" + str(house["ref"])
 
                     # --> Adding all decision variables (corresponding to given house) to constraint
@@ -284,11 +287,12 @@ class Model_generator:
                         if student["study"] == study:
                             constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
-                    # --> Creating and recording decision variable for corresponding K out of N constraint
+                    # --> Creating and recording M decision variable for corresponding K out of N constraint
                     self.decision_variable_dict["y"][house["ref"]][study] = \
                         self.model.addVar(vtype=GRB.BINARY, name="y_study_" + study + "_" + str(house["ref"]))
 
                     # --> Creating summation of student in house must have the same study constraint
+                    # print(- house["room_count"] * self.decision_variable_dict["y"][house["ref"]][study])
                     self.model.addConstr(constraint >= house["room_count"]
                                          - house["room_count"] * self.decision_variable_dict["y"][house["ref"]][study],
                                          constraint_name)
@@ -297,7 +301,13 @@ class Model_generator:
                 constraint = self.recursive_add_to_linear_expression(self.decision_variable_dict["y"][house["ref"]],
                                                                      gp.LinExpr())
 
-                self.model.addConstr(constraint == 1, "Study_K_of_N_" + house["ref"])
+                # --> Creating and recording soft constraint variable
+                self.decision_variable_dict["y"][house["ref"]]["Slack"] = \
+                    self.model.addVar(vtype=GRB.BINARY, name="y_slack_" + str(house["ref"])) * (- 100)
+
+                # All N_variables sum to one
+                self.model.addConstr(constraint + self.decision_variable_dict["y"][house["ref"]]["Slack"] <= 1,
+                                     "Study_K_of_N_" + house["ref"])
 
         return
 
@@ -335,7 +345,8 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    model = Model_generator(Student_dataset(100), House_dataset(15))
+    model = Model_generator(Student_dataset(10), House_dataset(4))
+
     model.output_to_lp()
     model.optimize()
 
