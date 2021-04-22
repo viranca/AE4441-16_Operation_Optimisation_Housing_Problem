@@ -59,7 +59,7 @@ class House_dataset(Dataset):
         # --> Initialising data properties
         if statistical_properties is None:
             self.statistical_properties = {"room_count": {"mu": 3,
-                                                          "sigma": 1},
+                                                          "sigma": 2},
 
                                            "rent_per_room": {"mu": 600,
                                                              "sigma": 100},
