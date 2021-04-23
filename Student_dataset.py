@@ -119,7 +119,6 @@ class Student_dataset(Dataset):
         # --> Sorting students by year
         self.sort_by_property("year")
 
-
 if __name__ == '__main__':
     students = Student_dataset(1000)
 
