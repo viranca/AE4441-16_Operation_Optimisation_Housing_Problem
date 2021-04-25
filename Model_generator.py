@@ -35,8 +35,8 @@ class Model_generator:
 
         self.decision_variable_dict = {"Included": {                    # --> Included in objective function
                                            "x": {},                     # Decision variables
-                                           "Supply_slack_x": {},        # Slack/Artificial/Surplus variables
-                                           "Dutch_slack_x": {},         # Slack/Artificial/Surplus variables
+                                           "Supply_slack_variable_x": {},        # Slack/Artificial/Surplus variables
+                                           "Dutch_slack_variable_x": {},         # Slack/Artificial/Surplus variables
                                            "Study_slack_x": {},         # Slack/Artificial/Surplus variables
                                                    },
 
@@ -51,7 +51,7 @@ class Model_generator:
         self.model = gp.Model("OO_assignment_model")
         
         # --> Disabling the gurobi console output, set to 1 to enable
-        self.model.Params.OutputFlag = 1
+        self.model.Params.OutputFlag = 0
 
         # --> Preforming data pre-processing
         self.pair_quality_dict = self.pre_process_data()
@@ -72,7 +72,7 @@ class Model_generator:
         # --> Building objective function
         self.build_objective()
 
-        print("Model construction completed")
+        #print("Model construction completed")
 
     def pre_process_data(self):
         """
@@ -204,8 +204,8 @@ class Model_generator:
         """
 
         for house in self.house_dataset.data:
-            self.decision_variable_dict["Included"]["Supply_slack_x"][house["ref"]] = \
-                self.model.addVar(vtype=GRB.BINARY, name="Supply_slack_x_" + str(house["ref"])) * (- 20)
+            self.decision_variable_dict["Included"]["Supply_slack_variable_x"][house["ref"]] = \
+                self.model.addVar(vtype=GRB.BINARY, name="Supply_slack_variable_x_" + str(house["ref"])) * (- 20)
 
             # --> Adding all decision variables (corresponding to given house) to constraint
             constraint = gp.LinExpr()
@@ -215,7 +215,7 @@ class Model_generator:
 
             # self.model.addConstr(constraint == house["room_count"], "C_supply_" + str(house["ref"])
 
-            self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Supply_slack_x"][house["ref"]],
+            self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Supply_slack_variable_x"][house["ref"]],
                                  "C_supply_lower_" + str(house["ref"]))
 
             self.model.addConstr(constraint <= house["room_count"],
@@ -284,8 +284,8 @@ class Model_generator:
 
         for house in self.house_dataset.data:
             if house["room_count"] > 1:
-                self.decision_variable_dict["Included"]["Dutch_slack_x"][house["ref"]] = \
-                    self.model.addVar(vtype=GRB.BINARY, name="Dutch_slack_x_" + str(house["ref"])) * (- 5)
+                self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]] = \
+                    self.model.addVar(vtype=GRB.BINARY, name="Dutch_slack_variable_x_" + str(house["ref"])) * (- 5)
 
                 # --> Adding all decision variables (corresponding to given house) to constraint
                 constraint = gp.LinExpr()
@@ -295,7 +295,7 @@ class Model_generator:
                         constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
 
                 # --> Add lower constraint
-                self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Dutch_slack_x"][house["ref"]],
+                self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]],
                                      "C_dutch_constraint_" + str(house["ref"]))
 
         return
@@ -389,10 +389,9 @@ if __name__ == '__main__':
     student_data = Student_dataset(10)
     house_data = House_dataset(2)
 
-    print(student_data.list_property("gender"))
-    print(student_data.list_property("nationality"))
-
-    print(sum(house_data.list_property("room_count")))
+    #print(student_data.list_property("gender"))
+    #print(student_data.list_property("nationality"))
+    #print(sum(house_data.list_property("room_count")))
 
     model = Model_generator(student_data, house_data)
 
