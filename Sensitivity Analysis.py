@@ -28,10 +28,17 @@ def run_model(number_of_students, number_of_houses, statistical_properties):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -40,11 +47,14 @@ def run_model(number_of_students, number_of_houses, statistical_properties):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
     
-    return model, solution_i, allocated_i, model.model.objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev
+    return model, solution_i, allocated_i, model.model.objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses
 
 """
 =============================================================================
@@ -52,8 +62,8 @@ Set inputs and statistical properties for the base model:
 =============================================================================
 """
 
-number_of_students = 100
-number_of_houses = 15
+number_of_students = 1000
+number_of_houses = 250
 number_of_montecarlo_iterations = 300
 
 #The nine properties are:
@@ -148,18 +158,20 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students, 
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students, 
                                                                                         number_of_houses, statistical_properties_base)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
     pair_quality_allocated_mean_i.append(pair_quality_allocated_mean)
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration base model: ' + str(i))
-print('The objective value for the base model equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))   
+print('The objective value for the base model equals:' , statistics.mean(solutions_base_model),  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)
+           
 
     
 #%%
@@ -213,7 +225,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_roomcountplus10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -221,10 +233,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration roomcountplus10: ' + str(i))
 print('The objective value for the roomcountplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)
 
 
 #%%
@@ -246,7 +259,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_roomcountmin10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -254,10 +267,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration roomcountmin10: ' + str(i))
 print('The objective value for the roomcountmin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 
@@ -278,7 +292,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_rentplus10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -286,10 +300,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration rentplus10: ' + str(i))
 print('The objective value for the rentplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 #%%
 
@@ -310,7 +325,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_rentmin10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -318,10 +333,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration rentmin10: ' + str(i))
 print('The objective value for the rentmin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 
@@ -342,7 +358,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_locationplus10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -350,10 +366,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration locationplus10: ' + str(i))
 print('The objective value for the locationplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 
 #%%
@@ -375,7 +392,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_locationmin10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -383,10 +400,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration locationmin10: ' + str(i))
 print('The objective value for the locationmin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 #%%
 
@@ -407,7 +425,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_budgetplus10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -415,10 +433,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration budgetplus10: ' + str(i))
 print('The objective value for the budgetplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 #%%
 
@@ -439,7 +458,7 @@ allocated_base_model = []
 pair_quality_allocated_mean_i = []
 pair_quality_allocated_stdev_i = []
 for i in range(number_of_montecarlo_iterations):
-    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev = run_model(number_of_students,
+    model, solution_i, allocated_i, objVal, pair_quality_allocated_mean, pair_quality_allocated_stdev, Mixed_houses = run_model(number_of_students,
                                                                           number_of_houses, statistical_properties_budgetmin10)
     solutions_base_model.append(objVal)
     allocated_base_model.append(allocated_i)
@@ -447,10 +466,11 @@ for i in range(number_of_montecarlo_iterations):
     pair_quality_allocated_stdev_i.append(pair_quality_allocated_stdev)
     print_statusline('iteration budgetmin10: ' + str(i))
 print('The objective value for the budgetmin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 
@@ -490,19 +510,28 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
     pair_quality_allocated = []
     for n in range(len(solution_i)):
-        if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -513,10 +542,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration bscplus10: ' + str(i))
     
 print('The objective value for the bscplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 solutions_model = []
@@ -552,10 +582,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -564,7 +601,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -575,10 +615,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration bscmin10: ' + str(i))
     
 print('The objective value for the bscmin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 #%%
 
@@ -613,10 +654,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -625,7 +673,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -636,10 +687,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration genderplus10: ' + str(i))
     
 print('The objective value for the genderplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))   
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)   
 
 #%%
 solutions_model = []
@@ -673,10 +725,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -685,7 +744,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -696,10 +758,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration gendermin10: ' + str(i))
     
 print('The objective value for the gendermin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))   
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)   
 
 #%%
 solutions_model = []
@@ -734,10 +797,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -746,7 +816,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -757,10 +830,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration nationalityplus10: ' + str(i))
     
 print('The objective value for the nationalityplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 solutions_model = []
@@ -794,10 +868,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1  
     #print(solution_i)
     #print(allocated)
     
@@ -806,7 +887,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -817,10 +901,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration nationalitymin10: ' + str(i))
     
 print('The objective value for the nationalitymin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 solutions_model = []
@@ -857,10 +942,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -869,7 +961,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -880,10 +975,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration 3meplus10: ' + str(i))
     
 print('The objective value for the 3meplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 #%%
 solutions_model = []
@@ -920,10 +1016,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -932,7 +1035,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -943,10 +1049,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration aeplus10: ' + str(i))
     
 print('The objective value for the aeplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))   
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)   
 
 #%%
 solutions_model = []
@@ -983,19 +1090,28 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
     pair_quality_allocated = []
     for n in range(len(solution_i)):
-        if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -1006,10 +1122,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration csplus10: ' + str(i))
     
 print('The objective value for the csplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))   
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)   
 
 #%%
 solutions_model = []
@@ -1046,10 +1163,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -1058,7 +1182,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -1069,10 +1196,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration ioplus10: ' + str(i))
     
 print('The objective value for the ioplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i)) 
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses) 
 
 #%%
 
@@ -1108,10 +1236,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -1120,7 +1255,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -1131,10 +1269,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration preferenceplus10: ' + str(i))
     
 print('The objective value for the preferenceplus10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)
 
 #%%
 
@@ -1169,10 +1308,17 @@ for i in range(number_of_montecarlo_iterations):
     #print all x_ij:
     solution_i = [] 
     allocated_i = 0
+    Mixed_houses = 0
+    
     for v in model.model.getVars():
-          solution_i.append([v.varName,v.x])
-          if v.x != 0:
-              allocated_i += 1 
+        #print(v)
+        if len(str(v.varName)) == 7 or len(str(v.varName)) == 6 or len(str(v.varName)) == 5:         
+            solution_i.append([v.varName,v.x])
+            if v.x != 0:
+                allocated_i += 1 
+        elif len(str(v.varName)) == 15 or len(str(v.varName)) == 16:
+            if v.x != 0:
+                Mixed_houses += 1 
     #print(solution_i)
     #print(allocated)
     
@@ -1181,7 +1327,10 @@ for i in range(number_of_montecarlo_iterations):
         if solution_i[n][1] == 1:
             student_i = solution_i[n][0].split("_")[1]
             house_i = solution_i[n][0].split("_")[2]
-            pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
+            #print(student_i, house_i)
+            if student_i != 'conditional' and student_i != 'slack':
+                if house_i != 'conditional' and house_i != 'slack':
+                    pair_quality_allocated.append(model.pair_quality_dict[student_i][house_i])
     pair_quality_allocated_mean = statistics.mean(pair_quality_allocated)
     pair_quality_allocated_stdev = statistics.stdev(pair_quality_allocated)
 
@@ -1192,10 +1341,11 @@ for i in range(number_of_montecarlo_iterations):
     print_statusline('iteration preferencemin10: ' + str(i))
     
 print('The objective value for the preferencemin10 equals:' , statistics.mean(solutions_base_model),
-      'The amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
-      'The average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
-      'The average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
-      'The stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i))  
+      '\nThe amount of allocated houseplaces equals:' ,statistics.mean(allocated_base_model),
+      '\nThe average objective value equals:' ,statistics.mean(solutions_base_model)/number_of_students,
+      '\nThe average objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_mean_i),
+      '\nThe stdev objective value over allocated equals:' ,statistics.mean(pair_quality_allocated_stdev_i),
+      '\nThe number of mixed nationality houses equals:' , Mixed_houses)  
 
 
 
