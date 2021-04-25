@@ -386,8 +386,8 @@ if __name__ == '__main__':
 
     # random.seed = 0
 
-    student_data = Student_dataset(50)
-    house_data = House_dataset(20)
+    student_data = Student_dataset(10)
+    house_data = House_dataset(2)
 
     print(student_data.list_property("gender"))
     print(student_data.list_property("nationality"))
@@ -398,6 +398,8 @@ if __name__ == '__main__':
 
     model.output_to_lp()
     model.optimize()
+    model.model.printAttr('X')
+
 
 
 
