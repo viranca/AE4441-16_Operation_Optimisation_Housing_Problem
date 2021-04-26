@@ -38,11 +38,11 @@ class Model_generator:
                                            "Supply_slack_variable_x": {},        # Slack/Artificial/Surplus variables
                                            "Dutch_slack_variable_x": {},         # Slack/Artificial/Surplus variables
                                            "Study_slack_x": {},                  # Slack/Artificial/Surplus variables
-                                           "Gender_conditional": {},             # Slack/Artificial/Surplus variables
                                                    },
 
                                        "Not_included": {
                                            # --> Not included in objective function
+                                           "Gender_conditional": {},  # Slack/Artificial/Surplus variables
                                            "Study_conditional": {}      # Slack/Artificial/Surplus variables
                                                        }
                                       }
@@ -261,7 +261,7 @@ class Model_generator:
 
         for house in self.house_dataset.data:
             if house["room_count"] > 1:
-                self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]] = \
+                self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name="Gender_conditional_" + str(house["ref"]))
 
                 # --> Adding all decision variables (corresponding to given house) to constraint
@@ -272,11 +272,11 @@ class Model_generator:
                         constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                 # --> Add lower constraint
-                self.model.addConstr(constraint >= 2 - 1000 * self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]],
+                self.model.addConstr(constraint >= 2 - 1000 * self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]],
                                      "C_gender_split_min_" + str(house["ref"]))
 
                 # --> Add upper constraint
-                self.model.addConstr(constraint <= 1000 + 1000 * self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]],
+                self.model.addConstr(constraint <= 1000 + 1000 * self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]],
                                      "C_gender_split_0_" + str(house["ref"]))
 
     def build_dutch_constraint(self):
