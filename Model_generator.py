@@ -125,14 +125,24 @@ class Model_generator:
                 # --> Housing cost
                 # (adds 1, and reduces that if the budget is exceeded, by the percentage of the exceedance)
                 if house["rent_per_room"] < student["budget_min"]:
-                    pair_quality_dict[student["ref"]][house["ref"]] += \
-                        (1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]) * budget_weight
+                    pair_quality_dict[student["ref"]][house["ref"]] += 1 * budget_weight
+
+                    # pair_quality_dict[student["ref"]][house["ref"]] += \
+                    #     (1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]) * budget_weight
+                    # print("below min:")
+                    # print((1 - (student["budget_min"] - house["rent_per_room"])/student["budget_min"]) * budget_weight)
+
 
                 elif house["rent_per_room"] > student["budget_max"]:
                     pair_quality_dict[student["ref"]][house["ref"]] += \
                         (1 - (house["rent_per_room"] - student["budget_max"])/student["budget_max"]) * budget_weight
+                    # print("above max:")
+                    # print((1 - (house["rent_per_room"] - student["budget_max"])/student["budget_max"]) * budget_weight)
+
 
                 else:
+                    # print("within range")
+                    # print(1 * budget_weight)
                     pair_quality_dict[student["ref"]][house["ref"]] += 1 * budget_weight
 
         # ========================== Decision variable dictionary generation =================
@@ -386,8 +396,8 @@ if __name__ == '__main__':
 
     # random.seed = 0
 
-    student_data = Student_dataset(10)
-    house_data = House_dataset(2)
+    student_data = Student_dataset(50)
+    house_data = House_dataset(10)
 
     #print(student_data.list_property("gender"))
     #print(student_data.list_property("nationality"))
