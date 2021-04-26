@@ -33,17 +33,17 @@ class Model_generator:
         self.student_dataset = student_data
         self.house_dataset = house_data
 
-        self.decision_variable_dict = {"Included": {                    # --> Included in objective function
-                                           "x": {},                     # Decision variables
+        self.decision_variable_dict = {"x": {},                              # Decision variables
+                                       "Included": {                    # --> Included in objective function
                                            "Supply_slack_variable_x": {},        # Slack/Artificial/Surplus variables
                                            "Dutch_slack_variable_x": {},         # Slack/Artificial/Surplus variables
-                                           "Study_slack_x": {},         # Slack/Artificial/Surplus variables
+                                           "Study_slack_x": {},                  # Slack/Artificial/Surplus variables
+                                           "Gender_conditional": {},             # Slack/Artificial/Surplus variables
                                                    },
 
                                        "Not_included": {
-                                       # --> Not included in objective function
-                                       "Gender_conditional": {},    # Slack/Artificial/Surplus variables
-                                       "Study_conditional": {}      # Slack/Artificial/Surplus variables
+                                           # --> Not included in objective function
+                                           "Study_conditional": {}      # Slack/Artificial/Surplus variables
                                                        }
                                       }
 
@@ -51,7 +51,7 @@ class Model_generator:
         self.model = gp.Model("OO_assignment_model")
         
         # --> Disabling the gurobi console output, set to 1 to enable
-        self.model.Params.OutputFlag = 0
+        self.model.Params.OutputFlag = 1
 
         # --> Preforming data pre-processing
         self.pair_quality_dict = self.pre_process_data()
@@ -62,7 +62,7 @@ class Model_generator:
         # Hard constraints
         self.build_demand_constraints()
         self.build_first_year_priority_constraint()
-        self.build_gender_split_constraints()
+        # self.build_gender_split_constraints()
 
         # Soft constraints
         self.build_supply_constraints()
@@ -140,17 +140,17 @@ class Model_generator:
 
         for student in self.student_dataset.data:
             # --> Creating entry for student in decision variable dictionary
-            self.decision_variable_dict["Included"]["x"][student["ref"]] = {}
+            self.decision_variable_dict["x"][student["ref"]] = {}
 
             for house in self.house_dataset.data:
                 # --> Creating entry for student in decision variable dictionary
-                self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]] = None
+                self.decision_variable_dict["x"][student["ref"]][house["ref"]] = None
 
                 # --> Generating decision variable name according to convention x_"student-ref"_"house-ref"
                 variable_name = "x_" + str(student["ref"]) + "_" + str(house["ref"])
 
                 # --> Creating and recording decision variable for corresponding pair in decision variable dictionary
-                self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]] = \
+                self.decision_variable_dict["x"][student["ref"]][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name=variable_name)
                     
         return pair_quality_dict
@@ -164,6 +164,13 @@ class Model_generator:
 
         # --> Initiating objective function linear expression
         objective_function = gp.LinExpr()
+
+        # --> Adding decision variables for each student/house combination multiplied by their respective pair quality
+        for student in self.student_dataset.data:
+            for house in self.house_dataset.data:
+                # --> Adding variable to model with pair quality
+                objective_function += self.decision_variable_dict["x"][student["ref"]][house["ref"]] \
+                    * self.pair_quality_dict[student["ref"]][house["ref"]]
 
         # --> Adding decision variables for each student/house combination multiplied by their respective pair quality
         objective_function = self.recursive_add_to_linear_expression(self.decision_variable_dict["Included"],
@@ -189,7 +196,7 @@ class Model_generator:
             constraint = gp.LinExpr()
 
             for house in self.house_dataset.data:
-                constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
             self.model.addConstr(constraint <= 1, constraint_name)
 
@@ -211,7 +218,7 @@ class Model_generator:
             constraint = gp.LinExpr()
 
             for student in self.student_dataset.data:
-                constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
             # self.model.addConstr(constraint == house["room_count"], "C_supply_" + str(house["ref"])
 
@@ -239,7 +246,7 @@ class Model_generator:
                 fy_students_count += 1
 
                 for house in self.house_dataset.data:
-                    constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                    constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
         self.model.addConstr(constraint == fy_students_count, "C_fyp")
 
@@ -254,7 +261,7 @@ class Model_generator:
 
         for house in self.house_dataset.data:
             if house["room_count"] > 1:
-                self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]] = \
+                self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name="Gender_conditional_" + str(house["ref"]))
 
                 # --> Adding all decision variables (corresponding to given house) to constraint
@@ -262,14 +269,14 @@ class Model_generator:
 
                 for student in self.student_dataset.data:
                     if student["gender"] == "f":
-                        constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                        constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                 # --> Add lower constraint
-                self.model.addConstr(constraint >= 2 - 1000 * self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]],
+                self.model.addConstr(constraint >= 2 - 1000 * self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]],
                                      "C_gender_split_min_" + str(house["ref"]))
 
                 # --> Add upper constraint
-                self.model.addConstr(constraint <= 1000 - 1000 * self.decision_variable_dict["Not_included"]["Gender_conditional"][house["ref"]],
+                self.model.addConstr(constraint <= 1000 + 1000 * self.decision_variable_dict["Included"]["Gender_conditional"][house["ref"]],
                                      "C_gender_split_0_" + str(house["ref"]))
 
     def build_dutch_constraint(self):
@@ -292,7 +299,7 @@ class Model_generator:
 
                 for student in self.student_dataset.data:
                     if student["nationality"] == "Dutch":
-                        constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                        constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                 # --> Add lower constraint
                 self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]],
@@ -326,7 +333,7 @@ class Model_generator:
 
                     for student in self.student_dataset.data:
                         if student["study"] == study:
-                            constraint += self.decision_variable_dict["Included"]["x"][student["ref"]][house["ref"]]
+                            constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                     # --> Creating summation of student in house must have the same study constraint
                     self.model.addConstr(constraint >= 1 - 1000 * self.decision_variable_dict["Not_included"]["Study_conditional"][house["ref"]][study],
@@ -388,10 +395,6 @@ if __name__ == '__main__':
 
     student_data = Student_dataset(50)
     house_data = House_dataset(20)
-
-    #print(student_data.list_property("gender"))
-    #print(student_data.list_property("nationality"))
-    #print(sum(house_data.list_property("room_count")))
 
     model = Model_generator(student_data, house_data)
 
