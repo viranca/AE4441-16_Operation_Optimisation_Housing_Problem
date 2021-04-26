@@ -51,7 +51,7 @@ class Model_generator:
         self.model = gp.Model("OO_assignment_model")
         
         # --> Disabling the gurobi console output, set to 1 to enable
-        self.model.Params.OutputFlag = 1
+        self.model.Params.OutputFlag = 0
 
         # --> Preforming data pre-processing
         self.pair_quality_dict = self.pre_process_data()
