@@ -52,7 +52,7 @@ class Model_generator:
         self.model = gp.Model("OO_assignment_model")
         
         # --> Disabling the gurobi console output, set to 1 to enable
-        self.model.Params.OutputFlag = 0
+        self.model.Params.OutputFlag = 1
 
         # --> Preforming data pre-processing
         self.pair_quality_dict = self.pre_process_data()
@@ -295,6 +295,9 @@ class Model_generator:
                 self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]] = \
                     self.model.addVar(vtype=GRB.BINARY, name="Dutch_slack_variable_x_" + str(house["ref"])) * (- 5)
 
+                self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]] = \
+                    self.model.addVar(vtype=GRB.BINARY, name="Dutch_conditional_" + str(house["ref"]))
+
                 # --> Adding all decision variables (corresponding to given house) to constraint
                 constraint = gp.LinExpr()
 
@@ -304,15 +307,15 @@ class Model_generator:
 
                 # --> Add lower constraint
                 self.model.addConstr(constraint >= house["room_count"]
-                                     + house["room_count"]/5 * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]],
+                                     - house["room_count"] * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]],
                                      "C_dutch_constraint_min_" + str(house["ref"]))
 
                 # --> Add upper constraint
                 self.model.addConstr(constraint <= house["room_count"]
-                                     + house["room_count"]/5 * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]]
+                                     - house["room_count"] * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]]
                                      - house["room_count"]/5 * self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]],
                                      "C_dutch_constraint__0_" + str(house["ref"]))
-                
+
         return
 
     def build_studies_constraint(self):
