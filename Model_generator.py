@@ -42,7 +42,8 @@ class Model_generator:
 
                                        "Not_included": {
                                            # --> Not included in objective function
-                                           "Gender_conditional": {},  # Slack/Artificial/Surplus variables
+                                           "Gender_conditional": {},    # Slack/Artificial/Surplus variables
+                                           "Dutch_conditional": {},     # Slack/Artificial/Surplus variables
                                            "Study_conditional": {}      # Slack/Artificial/Surplus variables
                                                        }
                                       }
@@ -205,7 +206,7 @@ class Model_generator:
         Used to generate the supply constraints (1 per student)
 
             "sum of decisions variables of all students for a given house <= given house capacity"
-            # --> Soft constraint
+            # --> Soft lower bound, hard upper bound constraint
 
         :return: None
         """
@@ -302,9 +303,16 @@ class Model_generator:
                         constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                 # --> Add lower constraint
-                self.model.addConstr(constraint >= house["room_count"] + 1000 * self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]],
-                                     "C_dutch_constraint_" + str(house["ref"]))
+                self.model.addConstr(constraint >= house["room_count"]
+                                     + house["room_count"]/5 * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]],
+                                     "C_dutch_constraint_min_" + str(house["ref"]))
 
+                # --> Add upper constraint
+                self.model.addConstr(constraint <= house["room_count"]
+                                     + house["room_count"]/5 * self.decision_variable_dict["Not_included"]["Dutch_conditional"][house["ref"]]
+                                     - house["room_count"]/5 * self.decision_variable_dict["Included"]["Dutch_slack_variable_x"][house["ref"]],
+                                     "C_dutch_constraint__0_" + str(house["ref"]))
+                
         return
 
     def build_studies_constraint(self):
