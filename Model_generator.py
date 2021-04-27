@@ -347,7 +347,7 @@ class Model_generator:
                             constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                     # --> Creating summation of student in house must have the same study constraint
-                    self.model.addConstr(constraint >= house["room_count"] - 1000 * self.decision_variable_dict["Not_included"]["Study_conditional"][house["ref"]][study],
+                    self.model.addConstr(constraint >= 1 - 1000 * self.decision_variable_dict["Not_included"]["Study_conditional"][house["ref"]][study],
                                          "C_study_" + study + "_" + str(house["ref"]))
 
                 # --> Creating K (= 1) out of N (= nb. of studies available) constraint
