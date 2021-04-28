@@ -362,10 +362,6 @@ class Model_generator:
                 self.model.addConstr(constraint >= len(self.student_dataset.faculty_lst) - 1 + 1000 * self.decision_variable_dict["Included"]["Study_slack_x"][house["ref"]],
                                      "C_study_K_of_N_lower_" + house["ref"])
 
-                # All N_variables sum to nb faculties minus one upper constraint
-                # self.model.addConstr(constraint <= len(self.student_dataset.faculty_lst) - 1,
-                #                      "C_study_K_of_N_upper_" + house["ref"])
-
         return
 
     def recursive_add_to_linear_expression(self, decision_variable_dict, linear_expression):
