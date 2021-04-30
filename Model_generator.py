@@ -394,14 +394,14 @@ if __name__ == '__main__':
     from Student_dataset import Student_dataset
     from House_dataset import House_dataset
 
-    # random.seed = 0
+    random.seed = 42
 
-    student_data = Student_dataset(50)
-    house_data = House_dataset(10)
+    student_data = Student_dataset(10)
+    house_data = House_dataset(3)
 
-    #print(student_data.list_property("gender"))
-    #print(student_data.list_property("nationality"))
-    #print(sum(house_data.list_property("room_count")))
+    print(student_data.list_property("gender"))
+    print(student_data.list_property("nationality"))
+    print(sum(house_data.list_property("room_count")))
 
     model = Model_generator(student_data, house_data)
 
