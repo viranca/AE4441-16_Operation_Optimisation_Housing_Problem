@@ -62,8 +62,8 @@ Set inputs and statistical properties for the base model:
 =============================================================================
 """
 
-number_of_students = 1000
-number_of_houses = 250
+number_of_students = 100
+number_of_houses = 25
 number_of_montecarlo_iterations = 300
 
 #The nine properties are:
