@@ -111,11 +111,11 @@ def move_some_houses(houses, percent):
 if __name__ == '__main__':
     """
     Set up Verification Scenario, 8000 students and 800 houses and 
-    4 faculties, standard statistical properties
+    4 faculties, standard statistical properties and random.seed(345)
     """
-    n_students = 8000
-    n_houses = 800
-    faculties = ["ae", "cs", "3me", "io"]
+    n_students = 15
+    n_houses = 3
+    faculties = ["ae", "cs"]
     students = Student_dataset(n_students, faculties)
 
     houses = House_dataset(n_houses, faculties)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     should be smaller
     """
     houses2 = copy.deepcopy(houses)
-    houses2 = move_some_houses(houses2, 0.15)
+    houses2 = move_some_houses(houses2, 0.35)
     model2 = Model_generator(students, houses2)
     model2.optimize()
     print("Objective value of moved houses dataset: {}".format(
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     houses2.plot_property_histogram("y_location", bin_count=10)
 
     houses2 = copy.deepcopy(houses)
-    houses2 = move_some_houses(houses2, 0.3)
+    houses2 = move_some_houses(houses2, 0.7)
     houses2.plot_property_histogram("x_location", bin_count=10)
     houses2.plot_property_histogram("y_location", bin_count=10)
     model2 = Model_generator(students, houses2)
@@ -183,7 +183,7 @@ if __name__ == '__main__':
         "mu": 3,
                                                           "sigma": 1},
 
-                                           "rent_per_room": {"mu": 500,
+                                           "rent_per_room": {"mu": 550,
                                                              "sigma": 100},
 
                                            "location": {"mu": 50,
@@ -203,7 +203,7 @@ if __name__ == '__main__':
         "mu": 3,
                                                           "sigma": 1},
 
-                                           "rent_per_room": {"mu": 400,
+                                           "rent_per_room": {"mu": 500,
                                                              "sigma": 100},
 
                                            "location": {"mu": 50,
@@ -221,36 +221,36 @@ if __name__ == '__main__':
     """Test increasing the percentage of single housing to 30% and 50%
     Expected: objective function decreases since there are less rooms available
     """
-    houses4 = copy.deepcopy(houses)
-    houses.plot_property_histogram("room_count", bin_count=10)
-    houses4 = change_house_shared(houses4, 0.15)
-    houses4.plot_property_histogram("room_count", bin_count=10)
-    model4 = Model_generator(students, houses4)
-    model4.optimize()
-    print("Objective value of more single rooms dataset: {}".format(
-        model4.model.ObjVal))
-    print("Difference in Objective value of more single rooms dataset: {}".format(
-        model4.model.ObjVal - model.model.ObjVal))
-
-    houses4 = copy.deepcopy(houses)
-    houses4 = change_house_shared(houses4, 0.3)
-    houses4.plot_property_histogram("room_count", bin_count=10)
-    model4 = Model_generator(students, houses4)
-    model4.optimize()
-    print("Objective value of more single rooms 2 dataset: {}".format(
-        model4.model.ObjVal))
-    print("Difference in Objective value of more single rooms dataset: {}".format(
-        model4.model.ObjVal - model.model.ObjVal))
+    # houses4 = copy.deepcopy(houses)
+    # houses.plot_property_histogram("room_count", bin_count=10)
+    # houses4 = change_house_shared(houses4, 0.15)
+    # houses4.plot_property_histogram("room_count", bin_count=10)
+    # model4 = Model_generator(students, houses4)
+    # model4.optimize()
+    # print("Objective value of more single rooms dataset: {}".format(
+    #     model4.model.ObjVal))
+    # print("Difference in Objective value of more single rooms dataset: {}".format(
+    #     model4.model.ObjVal - model.model.ObjVal))
+    #
+    # houses4 = copy.deepcopy(houses)
+    # houses4 = change_house_shared(houses4, 0.3)
+    # houses4.plot_property_histogram("room_count", bin_count=10)
+    # model4 = Model_generator(students, houses4)
+    # model4.optimize()
+    # print("Objective value of more single rooms 2 dataset: {}".format(
+    #     model4.model.ObjVal))
+    # print("Difference in Objective value of more single rooms dataset: {}".format(
+    #     model4.model.ObjVal - model.model.ObjVal))
 
     """Test increasing the percentage of shared vs single housing student
-    preference from 50 percent to 60 to 70 percent of students preferring 
+    preference from 50 percent to 60 to 70 percent of students preferring
     shared housing
-    Expected: objective function increases since the preferences are 50 50 
+    Expected: objective function increases since the preferences are 50 50
     and there are more shared houses than there are single houses
     """
     students.plot_property_histogram("preference")
     students1 = copy.deepcopy(students)
-    students1 = change_student_shared(students1, 0.6)
+    students1 = change_student_shared(students1, 0.7)
     students1.plot_property_histogram("preference")
     model5 = Model_generator(students1, houses)
     model5.optimize()
@@ -260,7 +260,7 @@ if __name__ == '__main__':
         model5.model.ObjVal - model.model.ObjVal))
 
     students2 = copy.deepcopy(students)
-    students2 = change_student_shared(students1, 0.7)
+    students2 = change_student_shared(students2, 0.8)
     students2.plot_property_histogram("preference")
     model6 = Model_generator(students2, houses)
     model6.optimize()

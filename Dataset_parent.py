@@ -29,8 +29,12 @@ __date__ = '01/12/2020'
 class Dataset:
     def __init__(self):
         # --> Seeding generators
-        #np.random.seed(2)
-        #random.seed(345)
+        #Kevin seeds needed:
+        # np.random.seed(2)
+        # random.seed(34)
+        
+        # np.random.seed(2)
+        # random.seed(345)
         return
 
     def list_property(self, property):

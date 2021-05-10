@@ -63,7 +63,7 @@ class Model_generator:
         # Hard constraints
         self.build_demand_constraints()
         self.build_first_year_priority_constraint()
-        # self.build_gender_split_constraints()
+        self.build_gender_split_constraints()
 
         # Soft constraints
         self.build_supply_constraints()
@@ -347,7 +347,7 @@ class Model_generator:
                             constraint += self.decision_variable_dict["x"][student["ref"]][house["ref"]]
 
                     # --> Creating summation of student in house must have the same study constraint
-                    self.model.addConstr(constraint >= 1 - 1000 * self.decision_variable_dict["Not_included"]["Study_conditional"][house["ref"]][study],
+                    self.model.addConstr(constraint <= 0 + 1000 * self.decision_variable_dict["Not_included"]["Study_conditional"][house["ref"]][study],
                                          "C_study_" + study + "_" + str(house["ref"]))
 
                 # --> Creating K (= 1) out of N (= nb. of studies available) constraint
@@ -359,7 +359,7 @@ class Model_generator:
                     self.model.addVar(vtype=GRB.BINARY, name="Study_slack_x_" + str(house["ref"])) * (- 5)
 
                 # All N_variables sum to nb faculties minus one lower constraint
-                self.model.addConstr(constraint >= len(self.student_dataset.faculty_lst) - 1 + 1000 * self.decision_variable_dict["Included"]["Study_slack_x"][house["ref"]],
+                self.model.addConstr(constraint <= 1 - 1000 * self.decision_variable_dict["Included"]["Study_slack_x"][house["ref"]],
                                      "C_study_K_of_N_lower_" + house["ref"])
 
         return
@@ -400,8 +400,8 @@ if __name__ == '__main__':
 
     # random.seed = 0
 
-    student_data = Student_dataset(50)
-    house_data = House_dataset(20)
+    student_data = Student_dataset(4)
+    house_data = House_dataset(2)
 
     model = Model_generator(student_data, house_data)
 
